@@ -10,8 +10,8 @@ A modular, web-based library management system built with Flask, HTML5, CSS3, Ja
 - **Frontend:** HTML5, CSS3, JavaScript
 - **Database:** SQLite
 - **Version Control:** Git & GitHub
-- **CI/CD:** GitHub Actions (optional)
-- **Containerization:** Docker (optional)
+- **CI/CD:** GitHub Actions
+- **Containerization:** Docker 
 
 ---
 
