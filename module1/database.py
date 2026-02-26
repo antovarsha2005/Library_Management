@@ -221,6 +221,18 @@ def update_book(book_id, title, author, total_copies, available_copies):
         conn.close()
 
 
+def delete_book_by_id(book_id):
+    """Delete one book record by id using parameterized SQL."""
+    conn = get_db()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM books WHERE id = ?", (book_id,))
+        conn.commit()
+        return cursor.rowcount > 0
+    finally:
+        conn.close()
+
+
 def get_all_books():
     """Fetch all books for the view-books page."""
     with get_db() as conn:
@@ -231,6 +243,28 @@ def get_all_books():
             FROM books
             ORDER BY id DESC
             """
+        )
+        return cursor.fetchall()
+
+
+def search_books_by_title_or_author(search_query):
+    """Fetch books filtered by title or author using case-insensitive partial matching."""
+    query_text = (search_query or "").strip()
+    if not query_text:
+        return get_all_books()
+
+    like_pattern = f"%{query_text}%"
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT id, title, author, totalCopies, availableCopies
+            FROM books
+            WHERE title LIKE ? COLLATE NOCASE
+               OR author LIKE ? COLLATE NOCASE
+            ORDER BY id DESC
+            """,
+            (like_pattern, like_pattern),
         )
         return cursor.fetchall()
 
@@ -268,6 +302,7 @@ def build_dashboard_stats():
         total_users = safe_count(cursor, "SELECT COUNT(*) FROM users")
 
         # Prefer copy-based totals from required schema.
+        total_titles = 0
         total_books = 0
         available_books = 0
         borrowed_books = 0
@@ -275,6 +310,7 @@ def build_dashboard_stats():
             cursor.execute(
                 """
                 SELECT
+                    COUNT(*) AS total_titles,
                     COALESCE(SUM(totalCopies), 0) AS total_books,
                     COALESCE(SUM(availableCopies), 0) AS available_books
                 FROM books
@@ -282,11 +318,13 @@ def build_dashboard_stats():
             )
             result = cursor.fetchone()
             if result:
+                total_titles = int(result["total_titles"] or 0)
                 total_books = int(result["total_books"] or 0)
                 available_books = int(result["available_books"] or 0)
                 borrowed_books = max(total_books - available_books, 0)
         except sqlite3.Error:
             # Legacy fallback if books schema differs.
+            total_titles = safe_count(cursor, "SELECT COUNT(*) FROM books")
             total_books = safe_count(cursor, "SELECT COUNT(*) FROM books")
             available_books = safe_count(
                 cursor,
@@ -321,6 +359,7 @@ def build_dashboard_stats():
             active_members = total_users
 
     return {
+        "total_titles": total_titles,
         "total_books": total_books,
         "available_books": available_books,
         "borrowed_books": borrowed_books,

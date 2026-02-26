@@ -201,4 +201,41 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     document.querySelectorAll("form").forEach((form) => bindBookCopyValidation(form));
+
+    document.querySelectorAll(".delete-book-form").forEach((form) => {
+        form.addEventListener("submit", (event) => {
+            const title = form.getAttribute("data-book-title") || "this book";
+            const confirmed = window.confirm(`Delete "${title}" from the catalog?`);
+            if (!confirmed) {
+                event.preventDefault();
+            }
+        });
+    });
+
+    document.querySelectorAll(".book-catalog-card-clickable").forEach((card) => {
+        const navigate = () => {
+            const targetHref = card.getAttribute("data-href");
+            if (targetHref) {
+                window.location.href = targetHref;
+            }
+        };
+
+        card.addEventListener("click", (event) => {
+            const interactiveTarget = event.target.closest(
+                'a, button, input, select, textarea, form, [data-no-card-nav="true"]'
+            );
+            if (interactiveTarget) {
+                return;
+            }
+            navigate();
+        });
+
+        card.addEventListener("keydown", (event) => {
+            if (event.key !== "Enter" && event.key !== " ") {
+                return;
+            }
+            event.preventDefault();
+            navigate();
+        });
+    });
 });

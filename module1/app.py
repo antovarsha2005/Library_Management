@@ -9,9 +9,11 @@ from database import (
     build_dashboard_stats,
     create_book,
     create_user,
+    delete_book_by_id,
     email_exists,
     get_all_books,
     get_book_by_id,
+    search_books_by_title_or_author,
     get_user_by_email,
     get_user_by_id,
     init_db,
@@ -188,13 +190,22 @@ def add_book():
 @app.route("/view-books")
 @login_required
 def view_books():
+    search_query = request.args.get("search", "").strip()
     try:
-        books = get_all_books()
+        if search_query:
+            books = search_books_by_title_or_author(search_query)
+        else:
+            books = get_all_books()
     except sqlite3.Error:
         flash("Could not load books right now. Please try again.", "error")
         books = []
 
-    return render_template("view_books.html", books=books, nav_active="manage_books")
+    return render_template(
+        "view_books.html",
+        books=books,
+        search_query=search_query,
+        nav_active="manage_books",
+    )
 
 
 @app.route("/book/<int:id>")
@@ -271,9 +282,24 @@ def search_books():
 
 @app.route("/delete-book")
 @login_required
-def delete_book():
-    flash("Delete book workflow can be connected here.", "success")
-    return redirect(url_for("manage_books"))
+def delete_book_legacy():
+    return redirect(url_for("view_books"))
+
+
+@app.route("/delete-book/<int:id>", methods=["POST"])
+@login_required
+def delete_book(id):
+    try:
+        deleted = delete_book_by_id(id)
+        if not deleted:
+            flash("Book not found.", "error")
+            return redirect(url_for("view_books"))
+
+        flash("Book deleted successfully.", "success")
+        return redirect(url_for("view_books"))
+    except sqlite3.Error:
+        flash("Could not delete the book right now. Please try again.", "error")
+        return redirect(url_for("view_books"))
 
 
 @app.route("/profile", methods=["GET", "POST"])
