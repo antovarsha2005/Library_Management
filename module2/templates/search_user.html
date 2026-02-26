@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Search User | Library Management{% endblock %}
+
+{% block content %}
+<section class="page-heading heading-row">
+    <div>
+        <h1>Search User</h1>
+        <p>Find registered users by name.</p>
+    </div>
+    <a class="btn btn-light" href="{{ url_for('view_users') }}">Back to View Users</a>
+</section>
+
+<section class="form-card">
+    <form method="GET" action="{{ url_for('search_user') }}" class="user-form">
+        <div>
+            <label for="q">Search by name</label>
+            <input
+                id="q"
+                name="q"
+                type="text"
+                placeholder="Enter user name"
+                value="{{ query }}"
+            >
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Search</button>
+        </div>
+    </form>
+</section>
+
+{% if query %}
+    {% if users %}
+    <section class="table-card">
+        <div class="table-wrap">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th class="actions-col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>#{{ user.id }}</td>
+                    <td>{{ user.name }}</td>
+                    <td>{{ user.email }}</td>
+                    <td class="actions-col">
+                        <div class="action-group">
+                            <a class="btn btn-light btn-sm" href="{{ url_for('user_detail', user_id=user.id) }}">View</a>
+                            <a class="btn btn-primary btn-sm" href="{{ url_for('update_user', user_id=user.id) }}">Edit</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </section>
+    {% else %}
+    <section class="empty-state">
+        <i class="fa-solid fa-user-slash"></i>
+        <h2>No users found</h2>
+        <p>No matching users were found for "{{ query }}".</p>
+    </section>
+    {% endif %}
+{% endif %}
+{% endblock %}

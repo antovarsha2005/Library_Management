@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}User Detail | Library Management{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+    <h1>User Detail</h1>
+    <p>Detailed user view from the user card.</p>
+</section>
+
+<section class="detail-card">
+    <div class="detail-row">
+        <span>User ID</span>
+        <strong>#{{ user.id }}</strong>
+    </div>
+    <div class="detail-row">
+        <span>Name</span>
+        <strong>{{ user.name }}</strong>
+    </div>
+    <div class="detail-row">
+        <span>Email</span>
+        <strong>{{ user.email }}</strong>
+    </div>
+    <div class="detail-row">
+        <span>Password</span>
+        <strong>{{ '*' * (user.password|length) }}</strong>
+    </div>
+
+    <div class="form-actions">
+        <a class="btn btn-light" href="{{ url_for('view_users') }}">Back</a>
+        <a class="btn btn-primary" href="{{ url_for('update_user', user_id=user.id) }}">Edit User</a>
+    </div>
+</section>
+{% endblock %}
