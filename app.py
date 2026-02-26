@@ -1,112 +1,159 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, flash, redirect, render_template, request, session, url_for
+from werkzeug.security import check_password_hash, generate_password_hash
 import sqlite3
-import hashlib
-import os
+from functools import wraps
 
 app = Flask(__name__)
-app.secret_key = 'library_secret_key_2024'
+app.secret_key = "change-this-secret-key-in-production"
 
-DATABASE = 'library.db'
+DATABASE = "library.db"
+
 
 def get_db():
+    """Return a SQLite connection with row access by column name."""
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
     return conn
 
+
 def init_db():
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id       INTEGER PRIMARY KEY AUTOINCREMENT,
-            name     TEXT    NOT NULL,
-            email    TEXT    UNIQUE NOT NULL,
-            password TEXT    NOT NULL,
-            role     TEXT    NOT NULL
+    """Create required tables if they do not exist."""
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                email TEXT NOT NULL UNIQUE,
+                password TEXT NOT NULL,
+                role TEXT NOT NULL DEFAULT 'LIBRARIAN',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """
         )
-    ''')
-    conn.commit()
-    conn.close()
+        conn.commit()
 
-def hash_password(password):
-    return hashlib.sha256(password.encode()).hexdigest()
 
-@app.route('/')
+init_db()
+
+
+def login_required(route_function):
+    """Require an authenticated session for a route."""
+
+    @wraps(route_function)
+    def wrapper(*args, **kwargs):
+        if "user_id" not in session:
+            flash("Please log in to continue.", "error")
+            return redirect(url_for("login"))
+        return route_function(*args, **kwargs)
+
+    return wrapper
+
+
+@app.route("/")
 def index():
-    return redirect(url_for('signup'))
+    if "user_id" in session:
+        return redirect(url_for("dashboard"))
+    return redirect(url_for("login"))
 
-@app.route('/signup', methods=['GET', 'POST'])
+
+@app.route("/signup", methods=["GET", "POST"])
 def signup():
-    if request.method == 'POST':
-        name     = request.form.get('name', '').strip()
-        email    = request.form.get('email', '').strip().lower()
-        password = request.form.get('password', '')
-        role     = request.form.get('role', '')
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        email = request.form.get("email", "").strip().lower()
+        password = request.form.get("password", "")
 
-        # Basic validation
-        if not name or not email or not password or not role:
-            flash('All fields are required.', 'error')
-            return render_template('signup.html')
-
-        if role not in ('Librarian', 'Admin', 'User'):
-            flash('Invalid role selected.', 'error')
-            return render_template('signup.html')
-
-        hashed_pw = hash_password(password)
+        if not all([name, email, password]):
+            flash("All fields are required.", "error")
+            return redirect(url_for("signup"))
 
         try:
-            conn = get_db()
-            conn.execute(
-                'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
-                (name, email, hashed_pw, role)
-            )
-            conn.commit()
-            conn.close()
-            flash('Registration successful! Please log in.', 'success')
-            return redirect(url_for('login'))
+            with get_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT id FROM users WHERE email = ?", (email,))
+                if cursor.fetchone():
+                    flash("Email already registered. Please log in.", "error")
+                    return redirect(url_for("login"))
+
+                hashed_password = generate_password_hash(password)
+                cursor.execute(
+                    "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)",
+                    (name, email, hashed_password, "LIBRARIAN"),
+                )
+                conn.commit()
+
+            flash("Registration successful. Please log in.", "success")
+            return redirect(url_for("login"))
         except sqlite3.IntegrityError:
-            flash('An account with this email already exists.', 'error')
-            return render_template('signup.html')
+            flash("Email already registered. Please log in.", "error")
+            return redirect(url_for("login"))
+        except Exception:
+            flash("Unable to create account right now. Please try again.", "error")
+            return redirect(url_for("signup"))
 
-    return render_template('signup.html')
+    return render_template("signup.html")
 
-@app.route('/login', methods=['GET', 'POST'])
+
+@app.route("/login", methods=["GET", "POST"])
 def login():
-    if request.method == 'POST':
-        email    = request.form.get('email', '').strip().lower()
-        password = request.form.get('password', '')
-        hashed_pw = hash_password(password)
+    if request.method == "POST":
+        email = request.form.get("email", "").strip().lower()
+        password = request.form.get("password", "")
 
-        conn = get_db()
-        user = conn.execute(
-            'SELECT * FROM users WHERE email = ? AND password = ?',
-            (email, hashed_pw)
-        ).fetchone()
-        conn.close()
+        if not all([email, password]):
+            flash("Email and password are required.", "error")
+            return redirect(url_for("login"))
 
-        if user:
-            session['user_id']   = user['id']
-            session['user_name'] = user['name']
-            session['user_role'] = user['role']
-            flash(f'Welcome back, {user["name"]}!', 'success')
-            return redirect(url_for('dashboard'))
-        else:
-            flash('Invalid email or password.', 'error')
+        try:
+            with get_db() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "SELECT id, name, email, password, role FROM users WHERE email = ?",
+                    (email,),
+                )
+                user = cursor.fetchone()
 
-    return render_template('login.html')
+            if not user or not check_password_hash(user["password"], password):
+                flash("Invalid email or password.", "error")
+                return redirect(url_for("login"))
 
-@app.route('/dashboard')
+            if user["role"] != "LIBRARIAN":
+                flash("Only librarian accounts can access this system.", "error")
+                return redirect(url_for("login"))
+
+            session["user_id"] = user["id"]
+            session["user_name"] = user["name"]
+            session["user_email"] = user["email"]
+            session["role"] = "LIBRARIAN"
+
+            flash("Login successful.", "success")
+            return redirect(url_for("dashboard"))
+        except Exception:
+            flash("Unable to log in right now. Please try again.", "error")
+            return redirect(url_for("login"))
+
+    return render_template("login.html")
+
+
+@app.route("/dashboard")
+@login_required
 def dashboard():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-    return f"<h2>Welcome, {session['user_name']} ({session['user_role']})!</h2><a href='/logout'>Logout</a>"
+    return render_template(
+        "dashboard.html",
+        name=session.get("user_name", "Librarian"),
+        email=session.get("user_email", ""),
+    )
 
-@app.route('/logout')
+
+@app.route("/logout")
+@login_required
 def logout():
     session.clear()
-    flash('You have been logged out.', 'success')
-    return redirect(url_for('login'))
+    flash("You have been logged out.", "success")
+    return redirect(url_for("login"))
 
-if __name__ == '__main__':
-    init_db()
+
+if __name__ == "__main__":
     app.run(debug=True)

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Librarian Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="dashboard-page">
+    <nav class="top-nav">
+        <div class="top-nav-inner">
+            <div class="brand-title">Library Management</div>
+            <div class="nav-actions">
+                <button type="button" class="nav-btn">Manage Books</button>
+                <button type="button" class="nav-btn">Profile</button>
+                <a href="{{ url_for('logout') }}" class="nav-btn nav-btn-accent">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="dashboard-main">
+        <section class="dashboard-panel">
+            <h1 class="dashboard-title">Librarian Dashboard</h1>
+            <p class="dashboard-subtitle">Manage books, monitor availability, and maintain accurate library records.</p>
+            <p class="dashboard-user">{{ name }} | {{ email }}</p>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="alerts dashboard-alerts">
+                        {% for category, message in messages %}
+                            <div class="alert {{ 'alert-success' if category == 'success' else 'alert-error' }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <div class="cards-scroll">
+                <div class="cards-grid">
+                    <article class="info-card">
+                        <h2>Total Books in Catalog</h2>
+                        <p class="info-value">--</p>
+                        <p class="info-note">Catalog summary placeholder.</p>
+                    </article>
+                    <article class="info-card">
+                        <h2>Available Books</h2>
+                        <p class="info-value">--</p>
+                        <p class="info-note">Availability placeholder.</p>
+                    </article>
+                    <article class="info-card">
+                        <h2>Borrowed Books</h2>
+                        <p class="info-value">--</p>
+                        <p class="info-note">Borrowing snapshot placeholder.</p>
+                    </article>
+                    <article class="info-card">
+                        <h2>Recently Added Books</h2>
+                        <p class="info-value">--</p>
+                        <p class="info-note">Recent entries placeholder.</p>
+                    </article>
+                    <article class="info-card">
+                        <h2>Pending Returns</h2>
+                        <p class="info-value">--</p>
+                        <p class="info-note">Return tracking placeholder.</p>
+                    </article>
+                    <article class="info-card">
+                        <h2>Overdue Records</h2>
+                        <p class="info-value">--</p>
+                        <p class="info-note">Overdue monitoring placeholder.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
