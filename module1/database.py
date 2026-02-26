@@ -198,6 +198,29 @@ def create_book(title, author, total_copies, available_copies):
         conn.close()
 
 
+def update_book(book_id, title, author, total_copies, available_copies):
+    """Update an existing book record using validated, parameterized SQL."""
+    clean_title, clean_author, parsed_total, parsed_available = validate_book_input(
+        title, author, total_copies, available_copies
+    )
+
+    conn = get_db()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            UPDATE books
+            SET title = ?, author = ?, totalCopies = ?, availableCopies = ?
+            WHERE id = ?
+            """,
+            (clean_title, clean_author, parsed_total, parsed_available, book_id),
+        )
+        conn.commit()
+        return cursor.rowcount > 0
+    finally:
+        conn.close()
+
+
 def get_all_books():
     """Fetch all books for the view-books page."""
     with get_db() as conn:

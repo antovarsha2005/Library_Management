@@ -16,6 +16,7 @@ from database import (
     get_user_by_id,
     init_db,
     normalize_role,
+    update_book as update_book_record,
     update_user_profile,
 )
 
@@ -210,6 +211,50 @@ def book_detail(id):
         return redirect(url_for("view_books"))
 
     return render_template("book_detail.html", book=book, nav_active="manage_books")
+
+
+@app.route("/edit-book/<int:id>", methods=["GET", "POST"])
+@login_required
+def edit_book(id):
+    try:
+        book = get_book_by_id(id)
+    except sqlite3.Error:
+        flash("Could not load book details right now. Please try again.", "error")
+        return redirect(url_for("view_books"))
+
+    if not book:
+        flash("Book not found.", "error")
+        return redirect(url_for("view_books"))
+
+    if request.method == "POST":
+        title = request.form.get("title", "")
+        author = request.form.get("author", "")
+        total_copies = request.form.get("totalCopies", "")
+        available_copies = request.form.get("availableCopies", "")
+
+        try:
+            updated = update_book_record(id, title, author, total_copies, available_copies)
+            if not updated:
+                flash("Book not found.", "error")
+                return redirect(url_for("view_books"))
+
+            flash("Book updated successfully.", "success")
+            return redirect(url_for("book_detail", id=id))
+        except ValueError as validation_error:
+            flash(str(validation_error), "error")
+            book = {
+                "id": id,
+                "title": (title or "").strip(),
+                "author": (author or "").strip(),
+                "totalCopies": total_copies,
+                "availableCopies": available_copies,
+            }
+            return render_template("edit_book.html", book=book, nav_active="manage_books")
+        except sqlite3.Error:
+            flash("Could not update the book right now. Please try again.", "error")
+            return redirect(url_for("edit_book", id=id))
+
+    return render_template("edit_book.html", book=book, nav_active="manage_books")
 
 
 @app.route("/update-book")

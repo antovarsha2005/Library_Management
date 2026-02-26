@@ -60,12 +60,21 @@ document.addEventListener("DOMContentLoaded", () => {
         field.classList.toggle("has-value", hasValue);
     };
 
-    document.querySelectorAll(".field-wrap input, .field-wrap select").forEach((field) => {
+    const floatingFields = Array.from(
+        document.querySelectorAll(".field-wrap input, .field-wrap select")
+    );
+
+    floatingFields.forEach((field) => {
         syncFloatingState(field);
         field.addEventListener("input", () => syncFloatingState(field));
         field.addEventListener("change", () => syncFloatingState(field));
         field.addEventListener("blur", () => syncFloatingState(field));
     });
+
+    // Handle browser autofill updates that can happen shortly after DOM ready.
+    setTimeout(() => {
+        floatingFields.forEach((field) => syncFloatingState(field));
+    }, 180);
 
     document.querySelectorAll(".toggle-pass").forEach((button) => {
         button.addEventListener("click", () => {
@@ -166,4 +175,30 @@ document.addEventListener("DOMContentLoaded", () => {
             signupForm.addEventListener("submit", syncConfirmValidation);
         }
     }
+
+    const bindBookCopyValidation = (form) => {
+        const totalInput = form.querySelector('input[name="totalCopies"]');
+        const availableInput = form.querySelector('input[name="availableCopies"]');
+        if (!totalInput || !availableInput) {
+            return;
+        }
+
+        const validateCopies = () => {
+            const total = Number.parseInt(totalInput.value, 10);
+            const available = Number.parseInt(availableInput.value, 10);
+            const hasBothValues = totalInput.value !== "" && availableInput.value !== "";
+
+            if (hasBothValues && Number.isFinite(total) && Number.isFinite(available) && available > total) {
+                availableInput.setCustomValidity("Available copies cannot exceed total copies.");
+            } else {
+                availableInput.setCustomValidity("");
+            }
+        };
+
+        totalInput.addEventListener("input", validateCopies);
+        availableInput.addEventListener("input", validateCopies);
+        form.addEventListener("submit", validateCopies);
+    };
+
+    document.querySelectorAll("form").forEach((form) => bindBookCopyValidation(form));
 });
