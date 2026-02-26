@@ -180,6 +180,55 @@ def view_books():
 
     return jsonify(result)
 
+@app.route('/transactions/active/<int:user_id>', methods=['GET'])
+def active_borrowed_books(user_id):
+    conn = sqlite3.connect("library.db")
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT t.id, b.title, t.borrow_date, t.due_date
+        FROM transactions t
+        INNER JOIN books b ON t.book_id = b.id
+        WHERE t.user_id = ? AND t.return_date IS NULL
+    """, (user_id,))
+
+    records = cursor.fetchall()
+    conn.close()
+
+    result = []
+    for row in records:
+        result.append({
+            "transaction_id": row[0],
+            "book_title": row[1],
+            "borrow_date": row[2],
+            "due_date": row[3]
+        })
+
+    return jsonify(result)
+
+
+@app.route('/books/<int:book_id>/availability', methods=['GET'])
+def check_availability(book_id):
+    conn = sqlite3.connect("library.db")
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT available_copies FROM books WHERE id=?", (book_id,))
+    book = cursor.fetchone()
+
+    conn.close()
+
+    if not book:
+        return jsonify({"error": "Book not found"}), 404
+
+    available = book[0]
+
+    return jsonify({
+        "book_id": book_id,
+        "available_copies": available,
+        "available": available > 0
+    })
+    
+    
 # ── Entry point ───────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     app.run(port=5000, debug=True)
