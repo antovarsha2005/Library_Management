@@ -27,27 +27,6 @@ def index():
     return jsonify({"message": "Library Management System API running"}), 200
 
 
-@app.route("/login", methods=["POST"])
-def login():
-    data = request.get_json()
-
-    if not data or "user_id" not in data:
-        return jsonify({"error": "User ID required"}), 400
-
-    user_id = data.get("user_id")
-    if not user_id:
-        return jsonify({"error": "User ID required"}), 400
-
-    session["user_id"] = user_id
-    return jsonify({"message": "Login successful"}), 200
-
-
-@app.route("/logout", methods=["POST"])
-def logout():
-    session.clear()
-    return jsonify({"message": "Logged out"}), 200
-
-
 @app.route("/borrow", methods=["POST"])
 def borrow_book():
     user_id = session.get("user_id")
@@ -117,6 +96,28 @@ def return_book():
             "return_date": date.today().isoformat(),
         }
     ), 200
+
+
+@app.route("/login", methods=["POST"])
+def login():
+    data = request.get_json()
+
+    if not data or "user_id" not in data:
+        return jsonify({"error": "User ID required"}), 400
+
+    user_id = data.get("user_id")
+    if not user_id:
+        return jsonify({"error": "User ID required"}), 400
+
+    session["user_id"] = user_id
+    return jsonify({"message": "Login successful"}), 200
+
+
+@app.route("/logout", methods=["POST"])
+def logout():
+    session.clear()
+    return jsonify({"message": "Logged out"}), 200
+
 
 @app.route("/my-transactions", methods=["GET"])
 def my_transactions():
