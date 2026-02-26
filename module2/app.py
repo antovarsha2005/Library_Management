@@ -1,153 +1,170 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
-from database import Database
-import logging
-from datetime import datetime
-import secrets
-
-# Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+import sqlite3
+from flask import Flask, flash, redirect, render_template, request, url_for
+from database import delete_user_by_id, get_connection, init_db, search_users_by_name
 
 app = Flask(__name__)
-app.secret_key = secrets.token_hex(16)
-db = Database()
+app.secret_key = "module2-library-secret-key"
 
-@app.route('/')
-def index():
-    """Redirect to dashboard"""
-    return redirect(url_for('dashboard'))
 
-@app.route('/dashboard')
+def fetch_user(user_id):
+    with get_connection() as conn:
+        return conn.execute(
+            "SELECT id, name, email, password FROM users WHERE id = ?",
+            (user_id,),
+        ).fetchone()
+
+
+def fetch_all_users():
+    with get_connection() as conn:
+        return conn.execute(
+            "SELECT id, name, email, password FROM users ORDER BY id DESC"
+        ).fetchall()
+
+
+def get_dashboard_stats():
+    with get_connection() as conn:
+        total_users = conn.execute("SELECT COUNT(*) FROM users").fetchone()[0]
+
+    # Dummy value for now, as requested.
+    total_books = 320
+    active_members = total_users
+
+    return {
+        "total_users": total_users,
+        "total_books": total_books,
+        "active_members": active_members,
+    }
+
+
+@app.route("/")
+def home():
+    return redirect(url_for("dashboard"))
+
+
+@app.route("/dashboard")
 def dashboard():
-    """Render dashboard with statistics"""
-    try:
-        stats = {
-            'total_users': db.get_total_users(),
-            'active_users': db.get_active_users(),
-            'total_books': db.get_total_books(),
-            'books_issued': db.get_books_issued()
-        }
-        recent_activities = db.get_recent_activities(limit=10)
-        return render_template('dashboard.html', stats=stats, activities=recent_activities)
-    except Exception as e:
-        logger.error(f"Error loading dashboard: {e}")
-        flash('Error loading dashboard', 'error')
-        return render_template('dashboard.html', stats={}, activities=[])
+    stats = get_dashboard_stats()
+    return render_template("dashboard.html", stats=stats)
 
-@app.route('/users')
-def view_users():
-    """View all users"""
-    try:
-        page = request.args.get('page', 1, type=int)
-        per_page = 10
-        users = db.get_all_users_paginated(page, per_page)
-        return render_template('view_users.html', users=users, page=page)
-    except Exception as e:
-        logger.error(f"Error viewing users: {e}")
-        flash('Error loading users', 'error')
-        return render_template('view_users.html', users=[])
 
-@app.route('/users/add', methods=['GET', 'POST'])
+@app.route("/manage-user")
+def manage_user():
+    return render_template("manage_user.html")
+
+
+@app.route("/users/add", methods=["GET", "POST"])
 def add_user():
-    """Add new user"""
-    if request.method == 'POST':
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        email = request.form.get("email", "").strip().lower()
+        password = request.form.get("password", "").strip()
+
+        if not name or not email or not password:
+            flash("All fields are required.", "danger")
+            return render_template("add_user.html", form_data=request.form)
+
         try:
-            user_data = {
-                'name': request.form['name'],
-                'email': request.form['email'],
-                'phone': request.form['phone'],
-                'address': request.form['address'],
-                'membership_type': request.form['membership_type'],
-                'joined_date': datetime.now().strftime('%Y-%m-%d')
-            }
-            
-            if db.add_user(user_data):
-                flash('User added successfully!', 'success')
-                logger.info(f"New user added: {user_data['email']}")
-                return redirect(url_for('view_users'))
-            else:
-                flash('Failed to add user', 'error')
-        except Exception as e:
-            logger.error(f"Error adding user: {e}")
-            flash('Error adding user', 'error')
-    
-    return render_template('add_user.html')
+            with get_connection() as conn:
+                conn.execute(
+                    "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
+                    (name, email, password),
+                )
+                conn.commit()
 
-@app.route('/users/update/<int:user_id>', methods=['GET', 'POST'])
-def update_user(user_id):
-    """Update user information"""
-    if request.method == 'POST':
-        try:
-            user_data = {
-                'name': request.form['name'],
-                'email': request.form['email'],
-                'phone': request.form['phone'],
-                'address': request.form['address'],
-                'membership_type': request.form['membership_type'],
-                'status': request.form['status']
-            }
-            
-            if db.update_user(user_id, user_data):
-                flash('User updated successfully!', 'success')
-                logger.info(f"User updated: {user_id}")
-                return redirect(url_for('view_users'))
-            else:
-                flash('Failed to update user', 'error')
-        except Exception as e:
-            logger.error(f"Error updating user: {e}")
-            flash('Error updating user', 'error')
-    
-    user = db.get_user_by_id(user_id)
-    return render_template('update_user.html', user=user)
+            flash("User added successfully.", "success")
+            return redirect(url_for("view_users"))
+        except sqlite3.IntegrityError:
+            flash("Email already exists. Please use a different email.", "danger")
+            return render_template("add_user.html", form_data=request.form)
 
-@app.route('/users/delete/<int:user_id>', methods=['POST'])
-def delete_user(user_id):
-    """Delete user"""
-    try:
-        if db.delete_user(user_id):
-            flash('User deleted successfully!', 'success')
-            logger.info(f"User deleted: {user_id}")
-        else:
-            flash('Failed to delete user', 'error')
-    except Exception as e:
-        logger.error(f"Error deleting user: {e}")
-        flash('Error deleting user', 'error')
-    
-    return redirect(url_for('view_users'))
+    return render_template("add_user.html")
 
-@app.route('/users/search')
+
+@app.route("/users")
+def view_users():
+    users = fetch_all_users()
+    return render_template("view_users.html", users=users)
+
+
+@app.route("/search-users", methods=["GET"])
 def search_user():
-    """Search users"""
-    query = request.args.get('q', '')
-    try:
-        if query:
-            users = db.search_users(query)
-        else:
-            users = []
-        return render_template('search_user.html', users=users, query=query)
-    except Exception as e:
-        logger.error(f"Error searching users: {e}")
-        flash('Error searching users', 'error')
-        return render_template('search_user.html', users=[], query=query)
+    query = request.args.get("q", "").strip()
+    users = search_users_by_name(query) if query else []
+    return render_template("search_user.html", query=query, users=users)
 
-@app.route('/api/users')
-def api_users():
-    """API endpoint for users"""
-    try:
-        users = db.get_all_users()
-        return jsonify({'status': 'success', 'data': users})
-    except Exception as e:
-        logger.error(f"API error: {e}")
-        return jsonify({'status': 'error', 'message': str(e)}), 500
 
-@app.errorhandler(404)
-def not_found_error(error):
-    return render_template('404.html'), 404
+@app.route("/users/<int:user_id>")
+def user_detail(user_id):
+    user = fetch_user(user_id)
+    if not user:
+        flash("User not found.", "warning")
+        return redirect(url_for("view_users"))
+    return render_template("user_detail.html", user=user)
 
-@app.errorhandler(500)
-def internal_error(error):
-    logger.error(f"Internal server error: {error}")
-    return render_template('500.html'), 500
 
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+@app.route("/users/<int:user_id>/edit", methods=["GET", "POST"])
+def update_user(user_id):
+    user = fetch_user(user_id)
+    if not user:
+        flash("User not found.", "warning")
+        return redirect(url_for("view_users"))
+
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        email = request.form.get("email", "").strip().lower()
+        password = request.form.get("password", "").strip()
+
+        if not name or not email or not password:
+            flash("All fields are required.", "danger")
+            return render_template("update_user.html", user=user)
+
+        try:
+            with get_connection() as conn:
+                conn.execute(
+                    """
+                    UPDATE users
+                    SET name = ?, email = ?, password = ?
+                    WHERE id = ?
+                    """,
+                    (name, email, password, user_id),
+                )
+                conn.commit()
+
+            flash("User updated successfully.", "success")
+            return redirect(url_for("view_users"))
+        except sqlite3.IntegrityError:
+            flash("Email already exists. Please use a different email.", "danger")
+            refreshed_user = {"id": user_id, "name": name, "email": email, "password": password}
+            return render_template("update_user.html", user=refreshed_user)
+
+    return render_template("update_user.html", user=user)
+
+
+@app.route("/users/<int:user_id>/delete", methods=["POST"])
+def delete_user(user_id):
+    if delete_user_by_id(user_id):
+        flash("User deleted successfully.", "success")
+    else:
+        flash("User not found.", "warning")
+    return redirect(url_for("view_users"))
+
+
+@app.route("/profile")
+def profile():
+    admin = {
+        "name": "Library Admin",
+        "email": "admin@library.com",
+        "role": "System Administrator",
+    }
+    return render_template("profile.html", admin=admin)
+
+
+@app.route("/logout", methods=["POST"])
+def logout():
+    flash("You have been logged out.", "info")
+    return redirect(url_for("dashboard"))
+
+
+if __name__ == "__main__":
+    init_db()
+    app.run(debug=True)

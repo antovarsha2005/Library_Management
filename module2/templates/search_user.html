@@ -1,196 +1,70 @@
 {% extends "base.html" %}
-
-{% block title %}Search Users - Library Management System{% endblock %}
+{% block title %}Search User | Library Management{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h2 class="animate__animated animate__fadeInDown">
-                <i class="fas fa-search me-2 text-primary"></i>Search Users
-            </h2>
-        </div>
+<section class="page-heading heading-row">
+    <div>
+        <h1>Search User</h1>
+        <p>Find registered users by name.</p>
     </div>
+    <a class="btn btn-light" href="{{ url_for('view_users') }}">Back to View Users</a>
+</section>
 
-    <div class="row">
-        <div class="col-md-4 mb-4">
-            <div class="card animate__animated animate__fadeInLeft">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">
-                        <i class="fas fa-filter me-2"></i>Search Filters
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <form id="searchForm" action="{{ url_for('search_user') }}" method="GET">
-                        <div class="mb-3">
-                            <label for="q" class="form-label">
-                                <i class="fas fa-keyword me-2 text-primary"></i>Search Term
-                            </label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-white">
-                                    <i class="fas fa-search"></i>
-                                </span>
-                                <input type="text" class="form-control" id="q" name="q" 
-                                       value="{{ query }}" placeholder="Name, email, or phone...">
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">
-                                <i class="fas fa-filter me-2 text-primary"></i>Filter By
-                            </label>
-                            <select class="form-select mb-2" id="membershipFilter">
-                                <option value="">All Memberships</option>
-                                <option value="Standard">Standard</option>
-                                <option value="Premium">Premium</option>
-                                <option value="Student">Student</option>
-                                <option value="Faculty">Faculty</option>
-                            </select>
-                            <select class="form-select" id="statusFilter">
-                                <option value="">All Status</option>
-                                <option value="Active">Active</option>
-                                <option value="Inactive">Inactive</option>
-                            </select>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="fas fa-search me-2"></i>Search
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            <div class="card mt-3 animate__animated animate__fadeInLeft" style="animation-delay: 0.1s">
-                <div class="card-body">
-                    <h6><i class="fas fa-info-circle me-2 text-info"></i>Search Tips</h6>
-                    <ul class="small text-muted ps-3 mb-0">
-                        <li>Search by name, email, or phone</li>
-                        <li>Use filters to narrow results</li>
-                        <li>Click on user to view details</li>
-                        <li>Results update in real-time</li>
-                    </ul>
-                </div>
-            </div>
+<section class="form-card">
+    <form method="GET" action="{{ url_for('search_user') }}" class="user-form">
+        <div>
+            <label for="q">Search by name</label>
+            <input
+                id="q"
+                name="q"
+                type="text"
+                placeholder="Enter user name"
+                value="{{ query }}"
+            >
         </div>
-
-        <div class="col-md-8">
-            <div class="card animate__animated animate__fadeInRight">
-                <div class="card-header bg-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">
-                            <i class="fas fa-users me-2 text-primary"></i>
-                            Search Results {% if query %}({{ users|length }} found){% endif %}
-                        </h5>
-                        {% if query %}
-                        <small class="text-muted">
-                            Searching for: "{{ query }}"
-                        </small>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="card-body p-0" id="searchResults">
-                    {% if query %}
-                        {% if users %}
-                            <div class="list-group list-group-flush">
-                                {% for user in users %}
-                                <div class="list-group-item list-group-item-action animate__animated animate__fadeIn">
-                                    <div class="row align-items-center">
-                                        <div class="col-md-6">
-                                            <h6 class="mb-1">
-                                                <i class="fas fa-user-circle text-primary me-2"></i>
-                                                {{ user.name }}
-                                            </h6>
-                                            <small class="text-muted d-block">
-                                                <i class="fas fa-envelope me-1"></i>{{ user.email }}
-                                            </small>
-                                            <small class="text-muted d-block">
-                                                <i class="fas fa-phone me-1"></i>{{ user.phone }}
-                                            </small>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <span class="badge bg-{{ 'primary' if user.membership_type == 'Premium' else 'info' }}">
-                                                {{ user.membership_type }}
-                                            </span>
-                                            <span class="badge bg-{{ 'success' if user.status == 'Active' else 'secondary' }} d-block mt-1">
-                                                {{ user.status }}
-                                            </span>
-                                        </div>
-                                        <div class="col-md-3 text-end">
-                                            <a href="{{ url_for('update_user', user_id=user.id) }}" 
-                                               class="btn btn-sm btn-outline-primary">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <button class="btn btn-sm btn-outline-info" 
-                                                    onclick="viewUserDetails({{ user.id }})">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                                {% endfor %}
-                            </div>
-                        {% else %}
-                            <div class="text-center py-5">
-                                <i class="fas fa-search fa-4x text-muted mb-3"></i>
-                                <h5 class="text-muted">No results found</h5>
-                                <p class="text-muted">Try different search terms or filters</p>
-                            </div>
-                        {% endif %}
-                    {% else %}
-                        <div class="text-center py-5">
-                            <i class="fas fa-arrow-up fa-4x text-muted mb-3"></i>
-                            <h5 class="text-muted">Enter search term to find users</h5>
-                            <p class="text-muted">Search by name, email, or phone number</p>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Search</button>
         </div>
-    </div>
-</div>
-{% endblock %}
+    </form>
+</section>
 
-{% block scripts %}
-<script>
-    // Real-time search with debounce
-    let searchTimeout;
-    document.getElementById('q').addEventListener('keyup', function() {
-        clearTimeout(searchTimeout);
-        const query = this.value;
-        
-        searchTimeout = setTimeout(function() {
-            if (query.length >= 2 || query.length === 0) {
-                document.getElementById('searchForm').submit();
-            }
-        }, 500);
-    });
-
-    // Filter changes
-    document.getElementById('membershipFilter').addEventListener('change', filterResults);
-    document.getElementById('statusFilter').addEventListener('change', filterResults);
-
-    function filterResults() {
-        const membership = document.getElementById('membershipFilter').value;
-        const status = document.getElementById('statusFilter').value;
-        const items = document.querySelectorAll('#searchResults .list-group-item');
-        
-        items.forEach(item => {
-            let show = true;
-            
-            if (membership) {
-                if (!item.textContent.includes(membership)) show = false;
-            }
-            
-            if (status && show) {
-                if (!item.textContent.includes(status)) show = false;
-            }
-            
-            item.style.display = show ? '' : 'none';
-        });
-    }
-
-    function viewUserDetails(userId) {
-        showNotification(`Loading details for user #${userId}...`, 'info');
-    }
-</script>
+{% if query %}
+    {% if users %}
+    <section class="table-card">
+        <div class="table-wrap">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th class="actions-col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>#{{ user.id }}</td>
+                    <td>{{ user.name }}</td>
+                    <td>{{ user.email }}</td>
+                    <td class="actions-col">
+                        <div class="action-group">
+                            <a class="btn btn-light btn-sm" href="{{ url_for('user_detail', user_id=user.id) }}">View</a>
+                            <a class="btn btn-primary btn-sm" href="{{ url_for('update_user', user_id=user.id) }}">Edit</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </section>
+    {% else %}
+    <section class="empty-state">
+        <i class="fa-solid fa-user-slash"></i>
+        <h2>No users found</h2>
+        <p>No matching users were found for "{{ query }}".</p>
+    </section>
+    {% endif %}
+{% endif %}
 {% endblock %}

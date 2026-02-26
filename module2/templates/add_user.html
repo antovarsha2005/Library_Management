@@ -1,159 +1,27 @@
 {% extends "base.html" %}
-
-{% block title %}Add User - Library Management System{% endblock %}
+{% block title %}Add User | Library Management{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card animate__animated animate__fadeIn">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">
-                        <i class="fas fa-user-plus me-2"></i>Add New User
-                    </h4>
-                </div>
-                <div class="card-body">
-                    <form method="POST" action="{{ url_for('add_user') }}" class="needs-validation" novalidate>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="name" class="form-label">
-                                    <i class="fas fa-user me-2 text-primary"></i>Full Name *
-                                </label>
-                                <input type="text" class="form-control" id="name" name="name" 
-                                       required maxlength="100" placeholder="Enter full name">
-                                <div class="invalid-feedback">Please enter full name</div>
-                            </div>
+<section class="page-heading">
+    <h1>Add User</h1>
+    <p>Create a new user record in the SQLite database.</p>
+</section>
 
-                            <div class="col-md-6 mb-3">
-                                <label for="email" class="form-label">
-                                    <i class="fas fa-envelope me-2 text-primary"></i>Email Address *
-                                </label>
-                                <input type="email" class="form-control" id="email" name="email" 
-                                       required placeholder="user@example.com">
-                                <div class="invalid-feedback">Please enter a valid email</div>
-                            </div>
-                        </div>
+<section class="form-card">
+    <form method="post" class="user-form">
+        <label for="name">Name</label>
+        <input id="name" name="name" type="text" required value="{{ form_data.name if form_data else '' }}" placeholder="Enter full name">
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="phone" class="form-label">
-                                    <i class="fas fa-phone me-2 text-primary"></i>Phone Number *
-                                </label>
-                                <input type="tel" class="form-control" id="phone" name="phone" 
-                                       required pattern="[0-9+\-\s]{10,}" placeholder="+1234567890">
-                                <div class="invalid-feedback">Please enter a valid phone number</div>
-                            </div>
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" required value="{{ form_data.email if form_data else '' }}" placeholder="user@email.com">
 
-                            <div class="col-md-6 mb-3">
-                                <label for="membership_type" class="form-label">
-                                    <i class="fas fa-id-card me-2 text-primary"></i>Membership Type *
-                                </label>
-                                <select class="form-select" id="membership_type" name="membership_type" required>
-                                    <option value="">Select membership type</option>
-                                    <option value="Standard">Standard</option>
-                                    <option value="Premium">Premium</option>
-                                    <option value="Student">Student</option>
-                                    <option value="Faculty">Faculty</option>
-                                    <option value="Corporate">Corporate</option>
-                                </select>
-                                <div class="invalid-feedback">Please select membership type</div>
-                            </div>
-                        </div>
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" required placeholder="Enter password">
 
-                        <div class="mb-3">
-                            <label for="address" class="form-label">
-                                <i class="fas fa-map-marker-alt me-2 text-primary"></i>Address
-                            </label>
-                            <textarea class="form-control" id="address" name="address" 
-                                      rows="3" placeholder="Enter complete address"></textarea>
-                        </div>
-
-                        <div class="mb-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="terms" required>
-                                <label class="form-check-label" for="terms">
-                                    I confirm that all information provided is correct and I agree to the 
-                                    <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">terms and conditions</a>
-                                </label>
-                                <div class="invalid-feedback">You must agree to the terms</div>
-                            </div>
-                        </div>
-
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <a href="{{ url_for('view_users') }}" class="btn btn-secondary me-md-2">
-                                <i class="fas fa-times me-2"></i>Cancel
-                            </a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-2"></i>Save User
-                            </button>
-                        </div>
-                    </form>
-                </div>
-                <div class="card-footer bg-light">
-                    <small class="text-muted">
-                        <i class="fas fa-info-circle me-1"></i>
-                        Fields marked with * are required
-                    </small>
-                </div>
-            </div>
+        <div class="form-actions">
+            <a class="btn btn-light" href="{{ url_for('manage_user') }}">Cancel</a>
+            <button class="btn btn-primary" type="submit">Save User</button>
         </div>
-    </div>
-</div>
-
-<!-- Terms and Conditions Modal -->
-<div class="modal fade" id="termsModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">
-                    <i class="fas fa-file-contract me-2"></i>Terms and Conditions
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <h6>Library Membership Agreement</h6>
-                <p>By becoming a member of our library, you agree to:</p>
-                <ul>
-                    <li>Provide accurate and complete information</li>
-                    <li>Return borrowed items on time</li>
-                    <li>Pay fines for late returns or damaged items</li>
-                    <li>Report lost or stolen library cards immediately</li>
-                    <li>Respect library staff and other members</li>
-                    <li>Follow all library rules and regulations</li>
-                </ul>
-                <p class="mb-0">Membership may be suspended or terminated for violation of these terms.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-    // Form validation
-    (function() {
-        'use strict';
-        window.addEventListener('load', function() {
-            var forms = document.getElementsByClassName('needs-validation');
-            Array.prototype.filter.call(forms, function(form) {
-                form.addEventListener('submit', function(event) {
-                    if (form.checkValidity() === false) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                    }
-                    form.classList.add('was-validated');
-                }, false);
-            });
-        }, false);
-    })();
-
-    // Auto-format phone number
-    document.getElementById('phone').addEventListener('input', function(e) {
-        let x = e.target.value.replace(/\D/g, '').match(/(\d{0,3})(\d{0,3})(\d{0,4})/);
-        e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
-    });
-</script>
+    </form>
+</section>
 {% endblock %}

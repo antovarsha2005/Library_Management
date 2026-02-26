@@ -1,121 +1,27 @@
 {% extends "base.html" %}
-
-{% block title %}Update User - Library Management System{% endblock %}
+{% block title %}Update User | Library Management{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card animate__animated animate__fadeIn">
-                <div class="card-header bg-warning text-white">
-                    <h4 class="mb-0">
-                        <i class="fas fa-edit me-2"></i>Update User
-                    </h4>
-                </div>
-                <div class="card-body">
-                    {% if user %}
-                    <form method="POST" action="{{ url_for('update_user', user_id=user.id) }}" 
-                          class="needs-validation" novalidate>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="name" class="form-label">
-                                    <i class="fas fa-user me-2 text-primary"></i>Full Name *
-                                </label>
-                                <input type="text" class="form-control" id="name" name="name" 
-                                       value="{{ user.name }}" required maxlength="100">
-                                <div class="invalid-feedback">Please enter full name</div>
-                            </div>
+<section class="page-heading">
+    <h1>Update User</h1>
+    <p>Edit user details and save changes to SQLite.</p>
+</section>
 
-                            <div class="col-md-6 mb-3">
-                                <label for="email" class="form-label">
-                                    <i class="fas fa-envelope me-2 text-primary"></i>Email Address *
-                                </label>
-                                <input type="email" class="form-control" id="email" name="email" 
-                                       value="{{ user.email }}" required>
-                                <div class="invalid-feedback">Please enter a valid email</div>
-                            </div>
-                        </div>
+<section class="form-card">
+    <form method="post" class="user-form">
+        <label for="name">Name</label>
+        <input id="name" name="name" type="text" required value="{{ user.name }}">
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="phone" class="form-label">
-                                    <i class="fas fa-phone me-2 text-primary"></i>Phone Number *
-                                </label>
-                                <input type="tel" class="form-control" id="phone" name="phone" 
-                                       value="{{ user.phone }}" required>
-                                <div class="invalid-feedback">Please enter a valid phone number</div>
-                            </div>
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" required value="{{ user.email }}">
 
-                            <div class="col-md-6 mb-3">
-                                <label for="membership_type" class="form-label">
-                                    <i class="fas fa-id-card me-2 text-primary"></i>Membership Type *
-                                </label>
-                                <select class="form-select" id="membership_type" name="membership_type" required>
-                                    <option value="Standard" {% if user.membership_type == 'Standard' %}selected{% endif %}>Standard</option>
-                                    <option value="Premium" {% if user.membership_type == 'Premium' %}selected{% endif %}>Premium</option>
-                                    <option value="Student" {% if user.membership_type == 'Student' %}selected{% endif %}>Student</option>
-                                    <option value="Faculty" {% if user.membership_type == 'Faculty' %}selected{% endif %}>Faculty</option>
-                                    <option value="Corporate" {% if user.membership_type == 'Corporate' %}selected{% endif %}>Corporate</option>
-                                </select>
-                            </div>
-                        </div>
+        <label for="password">Password</label>
+        <input id="password" name="password" type="text" required value="{{ user.password }}">
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="status" class="form-label">
-                                    <i class="fas fa-toggle-on me-2 text-primary"></i>Status
-                                </label>
-                                <select class="form-select" id="status" name="status">
-                                    <option value="Active" {% if user.status == 'Active' %}selected{% endif %}>Active</option>
-                                    <option value="Inactive" {% if user.status == 'Inactive' %}selected{% endif %}>Inactive</option>
-                                    <option value="Suspended" {% if user.status == 'Suspended' %}selected{% endif %}>Suspended</option>
-                                </select>
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">
-                                    <i class="fas fa-calendar me-2 text-primary"></i>Joined Date
-                                </label>
-                                <input type="text" class="form-control" value="{{ user.joined_date }}" readonly disabled>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="address" class="form-label">
-                                <i class="fas fa-map-marker-alt me-2 text-primary"></i>Address
-                            </label>
-                            <textarea class="form-control" id="address" name="address" 
-                                      rows="3">{{ user.address or '' }}</textarea>
-                        </div>
-
-                        <div class="mb-3">
-                            <div class="alert alert-info">
-                                <i class="fas fa-info-circle me-2"></i>
-                                <strong>Books Issued:</strong> {{ user.books_issued or 0 }}
-                            </div>
-                        </div>
-
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <a href="{{ url_for('view_users') }}" class="btn btn-secondary me-md-2">
-                                <i class="fas fa-times me-2"></i>Cancel
-                            </a>
-                            <button type="submit" class="btn btn-warning">
-                                <i class="fas fa-save me-2"></i>Update User
-                            </button>
-                        </div>
-                    </form>
-                    {% else %}
-                    <div class="text-center py-5">
-                        <i class="fas fa-exclamation-triangle fa-4x text-warning mb-3"></i>
-                        <h5 class="text-muted">User not found</h5>
-                        <a href="{{ url_for('view_users') }}" class="btn btn-primary mt-3">
-                            <i class="fas fa-arrow-left me-2"></i>Back to Users
-                        </a>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
+        <div class="form-actions">
+            <a class="btn btn-light" href="{{ url_for('view_users') }}">Cancel</a>
+            <button class="btn btn-primary" type="submit">Save Changes</button>
         </div>
-    </div>
-</div>
+    </form>
+</section>
 {% endblock %}
