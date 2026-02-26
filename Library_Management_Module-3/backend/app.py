@@ -118,6 +118,14 @@ def return_book():
         }
     ), 200
 
+@app.route("/my-transactions", methods=["GET"])
+def my_transactions():
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"error": "Not logged in"}), 401
+
+    history = get_borrow_history(user_id)
+    return jsonify([dict(row) for row in history]), 200
 
 
 
