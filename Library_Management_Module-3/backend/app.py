@@ -119,24 +119,6 @@ def return_book():
     ), 200
 
 
-@app.route("/my-transactions", methods=["GET"])
-def my_transactions():
-    user_id = session.get("user_id")
-    if not user_id:
-        return jsonify({"error": "Not logged in"}), 401
-
-    history = get_borrow_history(user_id)
-    return jsonify([dict(row) for row in history]), 200
-
-
-@app.route("/my-active-books", methods=["GET"])
-def my_active_books():
-    user_id = session.get("user_id")
-    if not user_id:
-        return jsonify({"error": "Not logged in"}), 401
-
-    active = get_current_borrows(user_id)
-    return jsonify([dict(row) for row in active]), 200
 
 
 @app.route("/books", methods=["GET"])
