@@ -3,24 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Librarian Registration</title>
+    <title>Sign Up | Library Management</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body class="auth-page">
-    <div class="auth-shell">
-        <div class="auth-card">
-            <h1 class="auth-title">Librarian Registration</h1>
-            <p class="auth-subtitle">Create your librarian account to manage books and library records.</p>
+<body class="auth-body">
+    <div class="auth-noise"></div>
+    <main class="auth-layout">
+        <section class="auth-showcase reveal-up">
+            <p class="auth-chip">Unified Library Platform</p>
+            <h1>Create your all-in-one Library Management account.</h1>
+            <p>Manage branches, books, members, and operations in one secure platform built for Librarians, Admins, and Users.</p>
+
+            <div class="auth-stats-row">
+                <span>Role-based access</span>
+                <span>Password protection</span>
+                <span>Cloud-like experience</span>
+            </div>
+
+            <div class="auth-feature-grid">
+                <article>
+                    <h3>Centralized Operations</h3>
+                    <p>Handle catalog, circulation, and team workflows from one modern dashboard.</p>
+                </article>
+                <article>
+                    <h3>Secure Identity</h3>
+                    <p>Account credentials are protected with hashing and session-based authentication.</p>
+                </article>
+                <article>
+                    <h3>Role-Aware Access</h3>
+                    <p>Assign Librarian, Admin, or User role during signup with clear ownership controls.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="auth-card reveal-up">
+            <div class="auth-card-head">
+                <h2>Create Account</h2>
+                <p>Start your Library Management workspace in seconds.</p>
+            </div>
 
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     <div class="alerts">
                         {% for category, message in messages %}
                             <div class="alert {{ 'alert-success' if category == 'success' else 'alert-error' }}">
-                                {{ message }}
+                                <span>{{ message }}</span>
                             </div>
                         {% endfor %}
                     </div>
@@ -28,20 +58,49 @@
             {% endwith %}
 
             <form method="POST" action="{{ url_for('signup') }}" class="auth-form">
-                <label for="name">Full Name</label>
-                <input type="text" id="name" name="name" placeholder="Full Name" autocomplete="name" required>
+                <label class="field-group">
+                    <span>Full Name</span>
+                    <input type="text" name="name" autocomplete="name" required>
+                </label>
 
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" placeholder="Email" autocomplete="email" required>
+                <label class="field-group">
+                    <span>Email</span>
+                    <input type="email" name="email" autocomplete="email" required>
+                </label>
 
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" placeholder="Password" autocomplete="new-password" required>
+                <label class="field-group">
+                    <span>Password</span>
+                    <div class="password-wrap">
+                        <input type="password" id="signup-password" name="password" autocomplete="new-password" required>
+                        <button type="button" class="toggle-pass" data-target="signup-password" aria-label="Show password">Show</button>
+                    </div>
+                </label>
 
-                <button type="submit" class="btn-primary">Register</button>
+                <label class="field-group">
+                    <span>Confirm Password</span>
+                    <div class="password-wrap">
+                        <input type="password" id="signup-confirm-password" name="confirm_password" autocomplete="new-password" required>
+                        <button type="button" class="toggle-pass" data-target="signup-confirm-password" aria-label="Show confirm password">Show</button>
+                    </div>
+                </label>
+
+                <label class="field-group">
+                    <span>Role</span>
+                    <select name="role" required>
+                        <option value="" disabled selected>Select your role</option>
+                        {% for role in roles %}
+                            <option value="{{ role }}">{{ role }}</option>
+                        {% endfor %}
+                    </select>
+                    <small class="field-help">Choose the role that matches your library responsibilities.</small>
+                </label>
+
+                <button type="submit" class="btn-gradient">Create Account</button>
             </form>
 
-            <p class="auth-footer">Already registered? <a href="{{ url_for('login') }}">Login</a></p>
-        </div>
-    </div>
+            <p class="auth-footer">Already have an account? <a href="{{ url_for('login') }}">Sign in</a></p>
+        </section>
+    </main>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile | Library Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="dashboard-body">
+    <div class="dashboard-bg"></div>
+
+    <header class="top-nav">
+        <div class="top-nav-inner">
+            <a href="{{ url_for('dashboard') }}" class="brand">
+                <span class="brand-mark"></span>
+                <span>Library Management</span>
+            </a>
+            <nav class="nav-actions">
+                <a href="{{ url_for('dashboard') }}#book-overview" class="nav-btn">Manage Books</a>
+                <a href="{{ url_for('profile') }}" class="nav-btn nav-btn-current">Profile</a>
+                <a href="{{ url_for('logout') }}" class="nav-btn nav-btn-accent">Logout</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="dashboard-main profile-main">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="alerts">
+                    {% for category, message in messages %}
+                        <div class="alert {{ 'alert-success' if category == 'success' else 'alert-error' }}">
+                            <span>{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <section class="profile-layout">
+            <article class="profile-card reveal-up">
+                <div class="avatar">{{ name[:1].upper() }}</div>
+                <h1>{{ name }}</h1>
+                <p>{{ email }}</p>
+                <span class="role-badge {{ role_badge }}">{{ role }}</span>
+                <a href="#edit-profile-form" class="btn-gradient profile-edit">Edit Profile</a>
+            </article>
+
+            <article class="profile-form-card reveal-up" id="edit-profile-form">
+                <h2>Update Profile</h2>
+                <p>Keep your account details current and secure.</p>
+
+                <form method="POST" action="{{ url_for('profile') }}" class="profile-form">
+                    <label class="field-group">
+                        <span>Full Name</span>
+                        <input type="text" name="name" value="{{ name }}" required>
+                    </label>
+
+                    <label class="field-group">
+                        <span>Email</span>
+                        <input type="email" name="email" value="{{ email }}" required>
+                    </label>
+
+                    <div class="password-section">
+                        <h3>Change Password</h3>
+                        <label class="field-group">
+                            <span>Current Password</span>
+                            <input type="password" name="current_password" autocomplete="current-password">
+                        </label>
+                        <label class="field-group">
+                            <span>New Password</span>
+                            <input type="password" name="new_password" autocomplete="new-password">
+                        </label>
+                        <label class="field-group">
+                            <span>Confirm New Password</span>
+                            <input type="password" name="confirm_password" autocomplete="new-password">
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn-gradient">Save Changes</button>
+                </form>
+            </article>
+        </section>
+    </main>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

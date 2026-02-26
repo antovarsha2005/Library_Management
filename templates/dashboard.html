@@ -3,77 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Librarian Dashboard</title>
+    <title>Dashboard | Library Management</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body class="dashboard-page">
-    <nav class="top-nav">
+<body class="dashboard-body">
+    <div class="dashboard-bg"></div>
+
+    <header class="top-nav">
         <div class="top-nav-inner">
-            <div class="brand-title">Library Management</div>
-            <div class="nav-actions">
-                <button type="button" class="nav-btn">Manage Books</button>
-                <button type="button" class="nav-btn">Profile</button>
+            <a href="{{ url_for('dashboard') }}" class="brand">
+                <span class="brand-mark"></span>
+                <span>Library Management</span>
+            </a>
+            <nav class="nav-actions">
+                <a href="#book-overview" class="nav-btn">Manage Books</a>
+                <a href="{{ url_for('profile') }}" class="nav-btn">Profile</a>
                 <a href="{{ url_for('logout') }}" class="nav-btn nav-btn-accent">Logout</a>
-            </div>
+            </nav>
         </div>
-    </nav>
+    </header>
 
     <main class="dashboard-main">
-        <section class="dashboard-panel">
-            <h1 class="dashboard-title">Librarian Dashboard</h1>
-            <p class="dashboard-subtitle">Manage books, monitor availability, and maintain accurate library records.</p>
-            <p class="dashboard-user">{{ name }} | {{ email }}</p>
+        <section class="dashboard-hero reveal-up">
+            <h1>Dashboard</h1>
+            <p>Welcome, {{ name }} ({{ role }})</p>
+            <span class="role-badge {{ role_badge }}">{{ role }}</span>
+        </section>
 
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    <div class="alerts dashboard-alerts">
-                        {% for category, message in messages %}
-                            <div class="alert {{ 'alert-success' if category == 'success' else 'alert-error' }}">
-                                {{ message }}
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            {% endwith %}
-
-            <div class="cards-scroll">
-                <div class="cards-grid">
-                    <article class="info-card">
-                        <h2>Total Books in Catalog</h2>
-                        <p class="info-value">--</p>
-                        <p class="info-note">Catalog summary placeholder.</p>
-                    </article>
-                    <article class="info-card">
-                        <h2>Available Books</h2>
-                        <p class="info-value">--</p>
-                        <p class="info-note">Availability placeholder.</p>
-                    </article>
-                    <article class="info-card">
-                        <h2>Borrowed Books</h2>
-                        <p class="info-value">--</p>
-                        <p class="info-note">Borrowing snapshot placeholder.</p>
-                    </article>
-                    <article class="info-card">
-                        <h2>Recently Added Books</h2>
-                        <p class="info-value">--</p>
-                        <p class="info-note">Recent entries placeholder.</p>
-                    </article>
-                    <article class="info-card">
-                        <h2>Pending Returns</h2>
-                        <p class="info-value">--</p>
-                        <p class="info-note">Return tracking placeholder.</p>
-                    </article>
-                    <article class="info-card">
-                        <h2>Overdue Records</h2>
-                        <p class="info-value">--</p>
-                        <p class="info-note">Overdue monitoring placeholder.</p>
-                    </article>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="alerts">
+                    {% for category, message in messages %}
+                        <div class="alert {{ 'alert-success' if category == 'success' else 'alert-error' }}">
+                            <span>{{ message }}</span>
+                        </div>
+                    {% endfor %}
                 </div>
+            {% endif %}
+        {% endwith %}
+
+        <section class="stats-scroll">
+            <div class="stats-grid">
+                <article class="stat-card reveal-up">
+                    <h3>Total Books</h3>
+                    <p class="stat-value">{{ stats.total_books }}</p>
+                    <small>All titles in catalog</small>
+                </article>
+                <article class="stat-card reveal-up">
+                    <h3>Available Books</h3>
+                    <p class="stat-value">{{ stats.available_books }}</p>
+                    <small>Ready for checkout</small>
+                </article>
+                <article class="stat-card reveal-up">
+                    <h3>Borrowed Books</h3>
+                    <p class="stat-value">{{ stats.borrowed_books }}</p>
+                    <small>Currently issued</small>
+                </article>
+                <article class="stat-card reveal-up">
+                    <h3>Total Users</h3>
+                    <p class="stat-value">{{ stats.total_users }}</p>
+                    <small>Registered accounts</small>
+                </article>
+                <article class="stat-card reveal-up">
+                    <h3>Active Members</h3>
+                    <p class="stat-value">{{ stats.active_members }}</p>
+                    <small>Recent activity users</small>
+                </article>
+                <article class="stat-card reveal-up">
+                    <h3>Overdue Books</h3>
+                    <p class="stat-value">{{ stats.overdue_books }}</p>
+                    <small>Require follow-up</small>
+                </article>
             </div>
         </section>
+
+        <div class="content-scroll">
+            <section class="dashboard-sections">
+                <article class="panel-card reveal-up" id="recent-activity">
+                    <div class="panel-head">
+                        <h2>Recent Activity</h2>
+                        <span class="panel-chip">Live Feed</span>
+                    </div>
+                    <ul class="activity-list">
+                        <li><strong>{{ name }}</strong> logged in and opened the dashboard.</li>
+                        <li>Profile and role settings are synced with the current session.</li>
+                        <li>New users can now join with Librarian, Admin, or User role.</li>
+                    </ul>
+                </article>
+
+                <article class="panel-card reveal-up" id="book-overview">
+                    <div class="panel-head">
+                        <h2>Book Overview</h2>
+                        <span class="panel-chip">Catalog</span>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Value</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Total Books</td>
+                                <td>{{ stats.total_books }}</td>
+                                <td><span class="table-pill">Tracked</span></td>
+                            </tr>
+                            <tr>
+                                <td>Available Books</td>
+                                <td>{{ stats.available_books }}</td>
+                                <td><span class="table-pill success">Healthy</span></td>
+                            </tr>
+                            <tr>
+                                <td>Borrowed Books</td>
+                                <td>{{ stats.borrowed_books }}</td>
+                                <td><span class="table-pill">Active</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </article>
+
+                <article class="panel-card reveal-up" id="management-highlights">
+                    <div class="panel-head">
+                        <h2>Management Highlights</h2>
+                        <span class="panel-chip">Insights</span>
+                    </div>
+                    <div class="highlight-grid">
+                        <div class="highlight-box">
+                            <h4>Account Coverage</h4>
+                            <p>{{ stats.total_users }} users are ready to access library workflows.</p>
+                        </div>
+                        <div class="highlight-box">
+                            <h4>Operational Load</h4>
+                            <p>{{ stats.borrowed_books }} books are currently in circulation.</p>
+                        </div>
+                        <div class="highlight-box">
+                            <h4>Priority Follow-up</h4>
+                            <p>{{ stats.overdue_books }} items require overdue handling.</p>
+                        </div>
+                    </div>
+                </article>
+            </section>
+        </div>
     </main>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

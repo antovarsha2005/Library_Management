@@ -3,24 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Librarian Login</title>
+    <title>Login | Library Management</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body class="auth-page">
-    <div class="auth-shell">
-        <div class="auth-card">
-            <h1 class="auth-title">Librarian Login</h1>
-            <p class="auth-subtitle">Access the library management system.</p>
+<body class="auth-body">
+    <div class="auth-noise"></div>
+    <main class="auth-layout">
+        <section class="auth-showcase reveal-up">
+            <p class="auth-chip">Secure Workspace Access</p>
+            <h1>Welcome to your Library Management command center.</h1>
+            <p>Sign in to supervise catalog activity, monitor members, and keep every branch operation aligned in real time.</p>
+
+            <div class="auth-stats-row">
+                <span>Fast sign in</span>
+                <span>Protected sessions</span>
+                <span>Role-based dashboard</span>
+            </div>
+
+            <div class="auth-feature-grid">
+                <article>
+                    <h3>Smart Monitoring</h3>
+                    <p>Track key library stats and action panels from one premium, responsive dashboard.</p>
+                </article>
+                <article>
+                    <h3>Safer Authentication</h3>
+                    <p>Password hashing and protected sessions keep user accounts secure and reliable.</p>
+                </article>
+                <article>
+                    <h3>Team-Friendly Flow</h3>
+                    <p>Librarian, Admin, and User roles can collaborate from a consistent system experience.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="auth-card reveal-up">
+            <div class="auth-card-head">
+                <h2>Sign In</h2>
+                <p>Continue to your dashboard.</p>
+            </div>
 
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     <div class="alerts">
                         {% for category, message in messages %}
                             <div class="alert {{ 'alert-success' if category == 'success' else 'alert-error' }}">
-                                {{ message }}
+                                <span>{{ message }}</span>
                             </div>
                         {% endfor %}
                     </div>
@@ -28,17 +58,25 @@
             {% endwith %}
 
             <form method="POST" action="{{ url_for('login') }}" class="auth-form">
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" placeholder="Email" autocomplete="email" required>
+                <label class="field-group">
+                    <span>Email</span>
+                    <input type="email" name="email" autocomplete="email" required>
+                </label>
 
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" placeholder="Password" autocomplete="current-password" required>
+                <label class="field-group">
+                    <span>Password</span>
+                    <div class="password-wrap">
+                        <input type="password" id="login-password" name="password" autocomplete="current-password" required>
+                        <button type="button" class="toggle-pass" data-target="login-password" aria-label="Show password">Show</button>
+                    </div>
+                </label>
 
-                <button type="submit" class="btn-primary">Login</button>
+                <button type="submit" class="btn-gradient">Login</button>
             </form>
 
-            <p class="auth-footer">Need an account? <a href="{{ url_for('signup') }}">Register</a></p>
-        </div>
-    </div>
+            <p class="auth-footer">Need an account? <a href="{{ url_for('signup') }}">Create one</a></p>
+        </section>
+    </main>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
