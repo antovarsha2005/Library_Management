@@ -82,6 +82,58 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
+    const countUpNodes = Array.from(document.querySelectorAll(".count-up"));
+    const animateCount = (node) => {
+        if (!node || node.dataset.animated === "true") {
+            return;
+        }
+
+        const target = Number(node.dataset.target || 0);
+        if (!Number.isFinite(target)) {
+            return;
+        }
+
+        const duration = 1200;
+        const startTime = performance.now();
+        node.dataset.animated = "true";
+
+        const step = (timestamp) => {
+            const elapsed = timestamp - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const currentValue = Math.round(target * eased);
+            node.textContent = currentValue.toLocaleString();
+
+            if (progress < 1) {
+                requestAnimationFrame(step);
+            } else {
+                node.textContent = target.toLocaleString();
+            }
+        };
+
+        requestAnimationFrame(step);
+    };
+
+    if (countUpNodes.length) {
+        if ("IntersectionObserver" in window) {
+            const counterObserver = new IntersectionObserver(
+                (entries, observer) => {
+                    entries.forEach((entry) => {
+                        if (!entry.isIntersecting) {
+                            return;
+                        }
+                        animateCount(entry.target);
+                        observer.unobserve(entry.target);
+                    });
+                },
+                { threshold: 0.24 }
+            );
+            countUpNodes.forEach((node) => counterObserver.observe(node));
+        } else {
+            countUpNodes.forEach((node) => animateCount(node));
+        }
+    }
+
     const nameInput = document.querySelector('input[name="name"]');
     const avatar = document.querySelector(".avatar");
     if (nameInput && avatar) {

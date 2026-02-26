@@ -7,137 +7,47 @@
     <div class="hero-copy">
         <p class="eyebrow">Centralized Control</p>
         <h1>Operational Overview</h1>
-        <p class="section-subtitle">Monitor book inventory, user engagement, and transaction flow from a centralized dashboard.</p>
+        <p class="section-subtitle">Monitor live inventory intelligence and platform health from a refined dashboard interface.</p>
         <div class="hero-meta">
             <span class="meta-pill">Welcome, {{ name }}</span>
             <span class="meta-pill meta-pill-muted">{{ email }}</span>
             <span class="role-badge {{ role_badge }}">{{ role }}</span>
         </div>
     </div>
-    <div class="hero-illustration hero-illustration-dashboard" aria-hidden="true">
-        <svg viewBox="0 0 540 300">
-            <defs>
-                <linearGradient id="dashGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="#4F46E5"/>
-                    <stop offset="54%" stop-color="#7C3AED"/>
-                    <stop offset="100%" stop-color="#06B6D4"/>
-                </linearGradient>
-            </defs>
-            <rect x="36" y="32" width="468" height="236" rx="28" fill="rgba(255,255,255,0.56)" stroke="rgba(79,70,229,0.28)"/>
-            <rect x="78" y="82" width="158" height="122" rx="18" fill="url(#dashGradient)" opacity="0.9"/>
-            <path d="M112 178 136 140l20 24 24-36 22 50" stroke="#ffffff" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="112" cy="178" r="7" fill="#ffffff"/>
-            <circle cx="136" cy="140" r="7" fill="#ffffff"/>
-            <circle cx="156" cy="164" r="7" fill="#ffffff"/>
-            <circle cx="180" cy="128" r="7" fill="#ffffff"/>
-            <circle cx="202" cy="178" r="7" fill="#ffffff"/>
-            <rect x="270" y="88" width="198" height="18" rx="9" fill="rgba(79,70,229,0.16)"/>
-            <rect x="270" y="121" width="152" height="13" rx="6" fill="rgba(30,41,59,0.2)"/>
-            <rect x="270" y="145" width="184" height="13" rx="6" fill="rgba(30,41,59,0.16)"/>
-            <rect x="270" y="169" width="122" height="13" rx="6" fill="rgba(30,41,59,0.12)"/>
-            <rect x="270" y="193" width="168" height="13" rx="6" fill="rgba(30,41,59,0.1)"/>
-        </svg>
+    <div class="hero-insight-card">
+        <h3>System Health</h3>
+        <p>Authentication and session controls are active for this account.</p>
+        <div class="hero-insight-metrics">
+            <span><strong class="count-up" data-target="{{ stats.total_users }}">0</strong> Users</span>
+            <span><strong class="count-up" data-target="{{ stats.active_members }}">0</strong> Active Members</span>
+            <span><strong class="count-up" data-target="{{ stats.overdue_books }}">0</strong> Overdue</span>
+        </div>
     </div>
 </section>
 
-<section class="metric-grid">
-    <article class="metric-card reveal-up">
-        <h3>Total Books</h3>
-        <p class="metric-value">{{ stats.total_books }}</p>
-        <small>All catalog records</small>
-    </article>
-    <article class="metric-card reveal-up">
-        <h3>Available Books</h3>
-        <p class="metric-value">{{ stats.available_books }}</p>
-        <small>Ready for borrowing</small>
-    </article>
-    <article class="metric-card reveal-up">
-        <h3>Borrowed Books</h3>
-        <p class="metric-value">{{ stats.borrowed_books }}</p>
-        <small>Issued in circulation</small>
-    </article>
-    <article class="metric-card reveal-up">
-        <h3>Total Users</h3>
-        <p class="metric-value">{{ stats.total_users }}</p>
-        <small>Registered accounts</small>
-    </article>
-    <article class="metric-card reveal-up">
-        <h3>Active Members</h3>
-        <p class="metric-value">{{ stats.active_members }}</p>
-        <small>Recent user activity</small>
-    </article>
-    <article class="metric-card reveal-up">
-        <h3>Overdue Books</h3>
-        <p class="metric-value">{{ stats.overdue_books }}</p>
-        <small>Requires follow-up</small>
-    </article>
-</section>
+<section class="library-overview reveal-up">
+    <div class="panel-head">
+        <h2>Library General Information</h2>
+        <span class="panel-chip">Live Metrics</span>
+    </div>
 
-<section class="dashboard-panels">
-    <article class="glass-panel reveal-up" id="recent-activity">
-        <div class="panel-head">
-            <h2>Recent Activity</h2>
-            <span class="panel-chip">Live Feed</span>
-        </div>
-        <ul class="activity-list">
-            <li><strong>{{ name }}</strong> logged in and accessed the operational dashboard.</li>
-            <li>Catalog metrics and role permissions are synchronized for this session.</li>
-            <li>Core workflows for books, users, and transactions are available from this interface.</li>
-        </ul>
-    </article>
-
-    <article class="glass-panel reveal-up" id="book-overview">
-        <div class="panel-head">
-            <h2>Book Overview</h2>
-            <span class="panel-chip">Inventory</span>
-        </div>
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Metric</th>
-                    <th>Value</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Total Books</td>
-                    <td>{{ stats.total_books }}</td>
-                    <td><span class="table-pill">Tracked</span></td>
-                </tr>
-                <tr>
-                    <td>Available Books</td>
-                    <td>{{ stats.available_books }}</td>
-                    <td><span class="table-pill table-pill-success">Healthy</span></td>
-                </tr>
-                <tr>
-                    <td>Borrowed Books</td>
-                    <td>{{ stats.borrowed_books }}</td>
-                    <td><span class="table-pill">Active</span></td>
-                </tr>
-            </tbody>
-        </table>
-    </article>
-
-    <article class="glass-panel reveal-up" id="management-highlights">
-        <div class="panel-head">
-            <h2>Management Highlights</h2>
-            <span class="panel-chip">Insights</span>
-        </div>
-        <div class="highlight-grid">
-            <div class="highlight-box">
-                <h4>Account Coverage</h4>
-                <p>{{ stats.total_users }} users currently have platform access.</p>
-            </div>
-            <div class="highlight-box">
-                <h4>Circulation Load</h4>
-                <p>{{ stats.borrowed_books }} books are active in circulation.</p>
-            </div>
-            <div class="highlight-box">
-                <h4>Priority Queue</h4>
-                <p>{{ stats.overdue_books }} records are flagged for overdue action.</p>
-            </div>
-        </div>
-    </article>
+    <div class="overview-stat-grid">
+        <article class="overview-stat-card reveal-up">
+            <h3>Total Books in Catalog</h3>
+            <p class="overview-value count-up" data-target="{{ stats.total_books }}">0</p>
+        </article>
+        <article class="overview-stat-card reveal-up">
+            <h3>Available Books</h3>
+            <p class="overview-value count-up" data-target="{{ stats.available_books }}">0</p>
+        </article>
+        <article class="overview-stat-card reveal-up">
+            <h3>Borrowed Books</h3>
+            <p class="overview-value count-up" data-target="{{ stats.borrowed_books }}">0</p>
+        </article>
+        <article class="overview-stat-card overview-stat-card-status reveal-up">
+            <h3>System Status</h3>
+            <p class="status-pill-live">Active</p>
+        </article>
+    </div>
 </section>
 {% endblock %}

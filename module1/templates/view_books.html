@@ -3,8 +3,44 @@
 {% block title %}View Books | Library Management{% endblock %}
 
 {% block content %}
-<section class="dashboard-hero reveal-up">
-    <h1>View All Books</h1>
-    <p>This page is ready for view-books business logic integration.</p>
+<section class="hero-card hero-card-centered reveal-up">
+    <div class="hero-copy">
+        <p class="eyebrow">Catalog Records</p>
+        <h1>View Books</h1>
+        <p class="section-subtitle">Browse live records from the SQLite database. Click any card to open detailed information.</p>
+    </div>
 </section>
+
+{% if books %}
+<section class="book-catalog-grid">
+    {% for book in books %}
+    <a href="{{ url_for('book_detail', id=book['id']) }}" class="book-catalog-card reveal-up" aria-label="Open details for {{ book['title'] }}">
+        <div class="book-catalog-head">
+            <h2>{{ book['title'] }}</h2>
+            <span class="availability-badge {{ 'is-available' if book['availableCopies'] > 0 else 'is-unavailable' }}">
+                {{ 'Available' if book['availableCopies'] > 0 else 'Unavailable' }}
+            </span>
+        </div>
+        <p class="book-author">By {{ book['author'] }}</p>
+        <div class="book-catalog-meta">
+            <div class="book-meta-item">
+                <span>Total Copies</span>
+                <strong>{{ book['totalCopies'] }}</strong>
+            </div>
+            <div class="book-meta-item">
+                <span>Available Copies</span>
+                <strong>{{ book['availableCopies'] }}</strong>
+            </div>
+        </div>
+        <div class="book-card-linkhint">Open Book Details</div>
+    </a>
+    {% endfor %}
+</section>
+{% else %}
+<section class="empty-state-card reveal-up">
+    <h2>No Books Found</h2>
+    <p>No records currently exist in the catalog. Add a new book to get started.</p>
+    <a href="{{ url_for('add_book') }}" class="btn-gradient">Add First Book</a>
+</section>
+{% endif %}
 {% endblock %}

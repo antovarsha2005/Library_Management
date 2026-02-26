@@ -7,8 +7,11 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from database import (
     ROLES,
     build_dashboard_stats,
+    create_book,
     create_user,
     email_exists,
+    get_all_books,
+    get_book_by_id,
     get_user_by_email,
     get_user_by_id,
     init_db,
@@ -158,16 +161,55 @@ def manage_books():
     return render_template("manage_books.html", nav_active="manage_books")
 
 
-@app.route("/add-book")
+@app.route("/add-book", methods=["GET", "POST"])
 @login_required
 def add_book():
+    if request.method == "POST":
+        title = request.form.get("title", "")
+        author = request.form.get("author", "")
+        total_copies = request.form.get("totalCopies", "")
+        available_copies = request.form.get("availableCopies", "")
+
+        try:
+            create_book(title, author, total_copies, available_copies)
+            flash("Book added successfully.", "success")
+            return redirect(url_for("manage_books"))
+        except ValueError as validation_error:
+            flash(str(validation_error), "error")
+            return redirect(url_for("add_book"))
+        except sqlite3.Error:
+            flash("Could not save the book right now. Please try again.", "error")
+            return redirect(url_for("add_book"))
+
     return render_template("add_book.html", nav_active="manage_books")
 
 
 @app.route("/view-books")
 @login_required
 def view_books():
-    return render_template("view_books.html", nav_active="manage_books")
+    try:
+        books = get_all_books()
+    except sqlite3.Error:
+        flash("Could not load books right now. Please try again.", "error")
+        books = []
+
+    return render_template("view_books.html", books=books, nav_active="manage_books")
+
+
+@app.route("/book/<int:id>")
+@login_required
+def book_detail(id):
+    try:
+        book = get_book_by_id(id)
+    except sqlite3.Error:
+        flash("Could not load book details right now. Please try again.", "error")
+        return redirect(url_for("view_books"))
+
+    if not book:
+        flash("Book not found.", "error")
+        return redirect(url_for("view_books"))
+
+    return render_template("book_detail.html", book=book, nav_active="manage_books")
 
 
 @app.route("/update-book")

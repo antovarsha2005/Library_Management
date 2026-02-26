@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Book Detail | Library Management{% endblock %}
+
+{% block content %}
+<section class="book-detail-shell reveal-up">
+    <article class="book-detail-glass">
+        <p class="eyebrow">Book Detail</p>
+        <h1>{{ book['title'] }}</h1>
+        <p class="book-detail-author">Author: {{ book['author'] }}</p>
+
+        <div class="book-detail-grid">
+            <div class="book-detail-item">
+                <span>Total Copies</span>
+                <strong>{{ book['totalCopies'] }}</strong>
+            </div>
+            <div class="book-detail-item">
+                <span>Available Copies</span>
+                <strong>{{ book['availableCopies'] }}</strong>
+            </div>
+            <div class="book-detail-item">
+                <span>Availability Status</span>
+                <strong class="{{ 'status-active' if book['availableCopies'] > 0 else 'status-inactive' }}">
+                    {{ 'Available' if book['availableCopies'] > 0 else 'Out of Stock' }}
+                </strong>
+            </div>
+            <div class="book-detail-item">
+                <span>Book ID</span>
+                <strong>#{{ book['id'] }}</strong>
+            </div>
+        </div>
+
+        <div class="book-detail-actions">
+            <a href="{{ url_for('view_books') }}" class="btn-secondary">Back to View Books</a>
+        </div>
+    </article>
+</section>
+{% endblock %}

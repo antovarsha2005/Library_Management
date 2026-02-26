@@ -55,6 +55,32 @@ def init_db():
             END
             """
         )
+
+        # Book inventory table used by add/view/detail workflows.
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS books (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                author TEXT NOT NULL,
+                totalCopies INTEGER NOT NULL CHECK (totalCopies >= 1),
+                availableCopies INTEGER NOT NULL CHECK (
+                    availableCopies >= 0
+                    AND availableCopies <= totalCopies
+                )
+            )
+            """
+        )
+
+        # Backward compatibility for older books table layouts.
+        cursor.execute("PRAGMA table_info(books)")
+        book_columns = [row["name"] for row in cursor.fetchall()]
+        if "totalCopies" not in book_columns:
+            cursor.execute("ALTER TABLE books ADD COLUMN totalCopies INTEGER NOT NULL DEFAULT 1")
+        if "availableCopies" not in book_columns:
+            cursor.execute(
+                "ALTER TABLE books ADD COLUMN availableCopies INTEGER NOT NULL DEFAULT 1"
+            )
         conn.commit()
 
 
@@ -122,6 +148,85 @@ def update_user_profile(user_id, name, email, hashed_password=None):
         conn.commit()
 
 
+def validate_book_input(title, author, total_copies, available_copies):
+    """Validate and normalize book payload before DB insertion."""
+    clean_title = (title or "").strip()
+    clean_author = (author or "").strip()
+    if not clean_title:
+        raise ValueError("Book title is required.")
+    if not clean_author:
+        raise ValueError("Author name is required.")
+
+    try:
+        parsed_total = int(total_copies)
+    except (TypeError, ValueError):
+        raise ValueError("Total copies must be a whole number.")
+    if parsed_total < 1:
+        raise ValueError("Total copies must be at least 1.")
+
+    try:
+        parsed_available = int(available_copies)
+    except (TypeError, ValueError):
+        raise ValueError("Available copies must be a whole number.")
+    if parsed_available < 0:
+        raise ValueError("Available copies cannot be negative.")
+    if parsed_available > parsed_total:
+        raise ValueError("Available copies cannot exceed total copies.")
+
+    return clean_title, clean_author, parsed_total, parsed_available
+
+
+def create_book(title, author, total_copies, available_copies):
+    """Insert a book record using parameterized SQL with explicit commit/close."""
+    clean_title, clean_author, parsed_total, parsed_available = validate_book_input(
+        title, author, total_copies, available_copies
+    )
+
+    conn = get_db()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            INSERT INTO books (title, author, totalCopies, availableCopies)
+            VALUES (?, ?, ?, ?)
+            """,
+            (clean_title, clean_author, parsed_total, parsed_available),
+        )
+        conn.commit()
+        return cursor.lastrowid
+    finally:
+        conn.close()
+
+
+def get_all_books():
+    """Fetch all books for the view-books page."""
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT id, title, author, totalCopies, availableCopies
+            FROM books
+            ORDER BY id DESC
+            """
+        )
+        return cursor.fetchall()
+
+
+def get_book_by_id(book_id):
+    """Fetch one book by id."""
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT id, title, author, totalCopies, availableCopies
+            FROM books
+            WHERE id = ?
+            """,
+            (book_id,),
+        )
+        return cursor.fetchone()
+
+
 def safe_count(cursor, query, params=()):
     """Execute count query safely and return 0 when optional tables do not exist."""
     try:
@@ -138,21 +243,38 @@ def build_dashboard_stats():
         cursor = conn.cursor()
 
         total_users = safe_count(cursor, "SELECT COUNT(*) FROM users")
-        total_books = safe_count(cursor, "SELECT COUNT(*) FROM books")
 
-        # Prefer status-based counts when that column/table exists.
-        available_books = safe_count(
-            cursor,
-            "SELECT COUNT(*) FROM books WHERE LOWER(status) = 'available'",
-        )
-        borrowed_books = safe_count(
-            cursor,
-            "SELECT COUNT(*) FROM books WHERE LOWER(status) = 'borrowed'",
-        )
-
-        # Fallback if there is no status column but books table exists.
-        if total_books and available_books == 0 and borrowed_books == 0:
-            available_books = total_books
+        # Prefer copy-based totals from required schema.
+        total_books = 0
+        available_books = 0
+        borrowed_books = 0
+        try:
+            cursor.execute(
+                """
+                SELECT
+                    COALESCE(SUM(totalCopies), 0) AS total_books,
+                    COALESCE(SUM(availableCopies), 0) AS available_books
+                FROM books
+                """
+            )
+            result = cursor.fetchone()
+            if result:
+                total_books = int(result["total_books"] or 0)
+                available_books = int(result["available_books"] or 0)
+                borrowed_books = max(total_books - available_books, 0)
+        except sqlite3.Error:
+            # Legacy fallback if books schema differs.
+            total_books = safe_count(cursor, "SELECT COUNT(*) FROM books")
+            available_books = safe_count(
+                cursor,
+                "SELECT COUNT(*) FROM books WHERE LOWER(status) = 'available'",
+            )
+            borrowed_books = safe_count(
+                cursor,
+                "SELECT COUNT(*) FROM books WHERE LOWER(status) = 'borrowed'",
+            )
+            if total_books and available_books == 0 and borrowed_books == 0:
+                available_books = total_books
 
         overdue_books = safe_count(
             cursor,
