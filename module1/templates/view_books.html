@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}View Books | Library Management{% endblock %}
+
+{% block content %}
+<section class="hero-card hero-card-centered reveal-up">
+    <div class="hero-copy">
+        <p class="eyebrow">Catalog Records</p>
+        <h1>View Books</h1>
+        <p class="section-subtitle">Browse live records from the SQLite catalog and open any card for full detail view.</p>
+    </div>
+</section>
+
+<section class="catalog-search-shell reveal-up">
+    <form method="GET" action="{{ url_for('view_books') }}" class="catalog-search-form" role="search">
+        <label for="catalog-search" class="sr-only">Search books by title or author</label>
+        <div class="catalog-search-input-wrap">
+            <span class="catalog-search-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="m10 2 .1 0A8 8 0 1 1 4.4 15.6l-2.7 2.7-1.4-1.4 2.7-2.7A8 8 0 0 1 10 2Zm0 2a6 6 0 1 0 .1 12A6 6 0 0 0 10 4Z"/></svg>
+            </span>
+            <input
+                id="catalog-search"
+                class="catalog-search-input"
+                type="search"
+                name="search"
+                value="{{ search_query or '' }}"
+                placeholder="Search by book title or author..."
+                autocomplete="off"
+            >
+        </div>
+        <div class="catalog-search-actions">
+            <button type="submit" class="btn-gradient">Search</button>
+            {% if search_query %}
+            <a href="{{ url_for('view_books') }}" class="btn-secondary">Clear</a>
+            {% endif %}
+        </div>
+    </form>
+</section>
+
+{% if books %}
+<section class="book-catalog-grid">
+    {% for book in books %}
+    <article
+        class="book-catalog-card book-catalog-card-clickable reveal-up"
+        data-href="{{ url_for('book_detail', id=book['id']) }}"
+        tabindex="0"
+        role="link"
+        aria-label="Open details for {{ book['title'] }}"
+    >
+        <div class="book-catalog-head">
+            <h2>{{ book['title'] }}</h2>
+            <span class="availability-badge {{ 'is-available' if book['availableCopies'] > 0 else 'is-unavailable' }}">
+                {{ 'Available' if book['availableCopies'] > 0 else 'Unavailable' }}
+            </span>
+        </div>
+        <p class="book-author">By {{ book['author'] }}</p>
+        <div class="book-catalog-meta">
+            <div class="book-meta-item">
+                <span>Total Copies</span>
+                <strong>{{ book['totalCopies'] }}</strong>
+            </div>
+            <div class="book-meta-item">
+                <span>Available Copies</span>
+                <strong>{{ book['availableCopies'] }}</strong>
+            </div>
+        </div>
+        <div class="book-card-actions">
+            <a href="{{ url_for('edit_book', id=book['id']) }}" class="btn-card-action btn-card-edit" data-no-card-nav="true">Edit</a>
+            <form method="POST" action="{{ url_for('delete_book', id=book['id']) }}" class="delete-book-form" data-book-title="{{ book['title'] }}" data-no-card-nav="true">
+                <button type="submit" class="btn-card-action btn-card-delete">Delete</button>
+            </form>
+        </div>
+        <div class="book-card-linkhint">Open Book Details</div>
+    </article>
+    {% endfor %}
+</section>
+{% else %}
+<section class="empty-state-card reveal-up">
+    <h2>{{ "No books match your search." if search_query else "No books available in catalog." }}</h2>
+    <p>{{ "Try a different title or author keyword." if search_query else "Add a new title to start building your collection." }}</p>
+    <div class="book-empty-actions">
+        {% if search_query %}
+        <a href="{{ url_for('view_books') }}" class="btn-secondary">Clear Search</a>
+        {% endif %}
+        <a href="{{ url_for('add_book') }}" class="btn-gradient">Add New Book</a>
+    </div>
+</section>
+{% endif %}
+{% endblock %}
