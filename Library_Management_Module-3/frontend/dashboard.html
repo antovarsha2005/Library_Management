@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LibraryOS — Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:      #1a1814;
+      --paper:    #f5f0e8;
+      --cream:    #ede7d9;
+      --white:    #fdfaf4;
+      --rule:     #c8bfaa;
+      --muted:    #7a7468;
+      --accent:   #2d5016;
+      --accent2:  #8b3a0f;
+      --green:    #3a7d44;
+      --red:      #b93030;
+      --gold:     #8a6a1a;
+      --sidebar:  220px;
+      --radius:   10px;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Outfit', sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      overflow: hidden;
+    }
+
+    /* ── ruled paper bg ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 31px,
+          rgba(180,168,148,.14) 31px,
+          rgba(180,168,148,.14) 32px
+        );
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .layout {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      height: 100vh;
+    }
+
+    /* ═══════════════ SIDEBAR ══════════════════ */
+    .sidebar {
+      width: var(--sidebar);
+      flex-shrink: 0;
+      background: var(--ink);
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .sidebar-top {
+      padding: 28px 22px 24px;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+
+    .logo-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: rgba(245,240,232,.3);
+      margin-bottom: 5px;
+    }
+    .logo-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--paper);
+    }
+    .logo-name em { font-style: italic; font-weight: 400; color: #b8d4a0; }
+
+    .nav {
+      flex: 1;
+      padding: 20px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .nav-section-label {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: rgba(245,240,232,.25);
+      padding: 10px 8px 6px;
+      margin-top: 8px;
+    }
+
+    .nav-btn {
+      background: none;
+      border: none;
+      color: rgba(245,240,232,.55);
+      font-family: 'Outfit', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: left;
+      padding: 9px 12px;
+      border-radius: 7px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      transition: background .15s, color .15s;
+    }
+    .nav-btn .icon { font-size: 14px; }
+    .nav-btn:hover { background: rgba(255,255,255,.07); color: var(--paper); }
+    .nav-btn.active { background: rgba(255,255,255,.1); color: var(--paper); }
+    .nav-btn.active .icon { color: #b8d4a0; }
+
+    .sidebar-footer {
+      padding: 16px 22px;
+      border-top: 1px solid rgba(255,255,255,.07);
+    }
+    .user-chip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .user-avatar {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      background: rgba(184,212,160,.18);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      color: #b8d4a0;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .user-info { flex: 1; min-width: 0; }
+    .user-id {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--paper);
+      font-weight: 500;
+    }
+    .user-role {
+      font-size: 10px;
+      color: rgba(245,240,232,.3);
+    }
+    .logout-btn {
+      background: none;
+      border: none;
+      color: rgba(245,240,232,.3);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 4px;
+      border-radius: 4px;
+      transition: color .15s;
+    }
+    .logout-btn:hover { color: #f0a090; }
+
+    /* ═══════════════ MAIN ══════════════════ */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 40px;
+      border-bottom: 1px solid var(--rule);
+      background: var(--white);
+      flex-shrink: 0;
+    }
+    .topbar-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -.3px;
+    }
+    .topbar-title em { font-style: italic; font-weight: 400; color: var(--muted); }
+    .topbar-date {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 36px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    /* ═══════════════ PANELS ══════════════════ */
+    .panel { display: none; animation: fadeUp .3s ease both; }
+    .panel.active { display: block; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ═══════════════ ACTION CARDS ══════════════════ */
+    .card-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+
+    .action-card {
+      background: var(--white);
+      border: 1.5px solid var(--rule);
+      border-radius: 12px;
+      padding: 24px;
+    }
+    .action-card h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .action-card .card-desc {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+    .input-row {
+      display: flex;
+      gap: 10px;
+    }
+    .input-row input {
+      flex: 1;
+      background: var(--paper);
+      border: 1.5px solid var(--rule);
+      border-radius: 7px;
+      padding: 10px 13px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 14px;
+      color: var(--ink);
+      outline: none;
+      transition: border-color .18s, box-shadow .18s;
+    }
+    .input-row input::placeholder { color: var(--rule); }
+    .input-row input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(45,80,22,.1);
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      font-family: 'Outfit', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 10px 18px;
+      border-radius: 7px;
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all .15s;
+      display: inline-flex; align-items: center; gap: 7px;
+    }
+    .btn-green  { background: var(--accent); color: #fff; }
+    .btn-green:hover  { background: #3a6b20; transform: translateY(-1px); }
+    .btn-amber  { background: var(--accent2); color: #fff; }
+    .btn-amber:hover  { background: #a04515; transform: translateY(-1px); }
+    .btn-dark   { background: var(--ink); color: var(--paper); }
+    .btn-dark:hover   { background: #2e2a24; transform: translateY(-1px); }
+    .btn-outline { background: none; border: 1.5px solid var(--rule); color: var(--muted); }
+    .btn-outline:hover { border-color: var(--muted); color: var(--ink); }
+    .btn:disabled { opacity: .55; cursor: not-allowed; transform: none !important; }
+
+    /* ── Quick Actions panel ── */
+    .quick-actions-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    /* ═══════════════ RESULT AREA ══════════════════ */
+    .result-box {
+      background: var(--white);
+      border: 1.5px solid var(--rule);
+      border-radius: 12px;
+      min-height: 200px;
+      overflow: hidden;
+    }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 22px;
+      border-bottom: 1px solid var(--rule);
+      background: var(--cream);
+    }
+    .result-header-title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .result-clear {
+      background: none;
+      border: none;
+      font-size: 11px;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+    .result-clear:hover { color: var(--red); }
+
+    .result-body { padding: 22px; }
+
+    .placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 52px 0;
+      color: var(--rule);
+      gap: 10px;
+    }
+    .placeholder-icon { font-size: 32px; }
+    .placeholder p { font-size: 13px; }
+
+    /* ── Toast notices ── */
+    .notice {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 14px 18px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      border: 1.5px solid transparent;
+      animation: fadeUp .2s ease;
+    }
+    .notice-icon { font-size: 16px; margin-top: 1px; flex-shrink: 0; }
+    .notice-title { font-weight: 700; margin-bottom: 2px; }
+    .notice-text { opacity: .85; font-size: 13px; }
+    .notice.ok   { background: rgba(58,125,68,.08); border-color: rgba(58,125,68,.2); color: var(--green); }
+    .notice.err  { background: rgba(185,48,48,.08); border-color: rgba(185,48,48,.2); color: var(--red); }
+    .notice.info { background: rgba(138,106,26,.08); border-color: rgba(138,106,26,.2); color: var(--gold); }
+
+    /* ── Tables ── */
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead th {
+      text-align: left;
+      padding: 0 14px 12px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 1.5px solid var(--rule);
+    }
+    tbody tr { transition: background .12s; }
+    tbody tr:hover { background: var(--cream); }
+    tbody td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--cream);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12.5px;
+      color: var(--ink);
+      vertical-align: middle;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+    }
+    .badge-green   { background: rgba(58,125,68,.12); color: var(--green); }
+    .badge-red     { background: rgba(185,48,48,.1);  color: var(--red); }
+    .badge-gold    { background: rgba(138,106,26,.1); color: var(--gold); }
+    .badge-muted   { background: rgba(122,116,104,.1); color: var(--muted); }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+    .section-title em { font-style: italic; font-weight: 400; color: var(--muted); }
+
+    /* ── Loader ── */
+    .loader { display: flex; justify-content: center; padding: 52px; }
+    .spin {
+      width: 28px; height: 28px;
+      border: 2px solid var(--rule);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 4px; }
+
+    /* responsive */
+    @media (max-width: 780px) {
+      .sidebar { width: 60px; }
+      .logo-label, .logo-name, .nav-section-label,
+      .nav-btn span:not(.icon), .user-info, .logout-btn { display: none; }
+      .content { padding: 24px 20px; }
+      .topbar { padding: 16px 20px; }
+      .card-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar">
+    <div class="sidebar-top">
+      <div class="logo-label">Library System</div>
+      <div class="logo-name">Library<em>OS</em></div>
+    </div>
+
+    <nav class="nav">
+      <div class="nav-section-label">Browse</div>
+      <button class="nav-btn active" data-panel="overview" onclick="switchPanel(this, 'overview')">
+        <span class="icon">⊞</span><span>Overview</span>
+      </button>
+      <button class="nav-btn" data-panel="all-books" onclick="switchPanel(this, 'all-books')">
+        <span class="icon">📚</span><span>All Books</span>
+      </button>
+
+      <div class="nav-section-label">My Library</div>
+      <button class="nav-btn" data-panel="active" onclick="switchPanel(this, 'active')">
+        <span class="icon">📖</span><span>Active Borrows</span>
+      </button>
+      <button class="nav-btn" data-panel="history" onclick="switchPanel(this, 'history')">
+        <span class="icon">🕑</span><span>History</span>
+      </button>
+
+      <div class="nav-section-label">Actions</div>
+      <button class="nav-btn" data-panel="borrow" onclick="switchPanel(this, 'borrow')">
+        <span class="icon">↓</span><span>Borrow Book</span>
+      </button>
+      <button class="nav-btn" data-panel="return" onclick="switchPanel(this, 'return')">
+        <span class="icon">↑</span><span>Return Book</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-chip">
+        <div class="user-avatar" id="user-avatar">U</div>
+        <div class="user-info">
+          <div class="user-id" id="user-id-display">User #—</div>
+          <div class="user-role">Member</div>
+        </div>
+        <button class="logout-btn" title="Logout" onclick="logout()">⏻</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="topbar-title">Overview <em>Dashboard</em></div>
+      <div class="topbar-date" id="topbar-date"></div>
+    </div>
+
+    <div class="content">
+
+      <!-- ── OVERVIEW PANEL ── -->
+      <div class="panel active" id="panel-overview">
+        <div class="quick-actions-row">
+          <button class="btn btn-dark" onclick="switchPanelById('all-books')">
+            <span>📚</span> View All Books
+          </button>
+          <button class="btn btn-green" onclick="switchPanelById('active')">
+            <span>📖</span> My Active Books
+          </button>
+          <button class="btn btn-outline" onclick="switchPanelById('history')">
+            <span>🕑</span> My Transactions
+          </button>
+        </div>
+
+        <div class="card-grid">
+          <!-- Borrow -->
+          <div class="action-card">
+            <h3>Borrow a Book</h3>
+            <p class="card-desc">Enter a book ID to check it out.</p>
+            <div class="input-row">
+              <input type="number" id="borrow-id-ov" placeholder="Book ID" min="1"/>
+              <button class="btn btn-green" onclick="borrowBook('borrow-id-ov', 'result-ov')">↓ Borrow</button>
+            </div>
+          </div>
+          <!-- Return -->
+          <div class="action-card">
+            <h3>Return a Book</h3>
+            <p class="card-desc">Enter the book ID you're returning.</p>
+            <div class="input-row">
+              <input type="number" id="return-id-ov" placeholder="Book ID" min="1"/>
+              <button class="btn btn-amber" onclick="returnBook('return-id-ov', 'result-ov')">↑ Return</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="result-box">
+          <div class="result-header">
+            <span class="result-header-title">Response</span>
+            <button class="result-clear" onclick="clearResult('result-ov')">clear</button>
+          </div>
+          <div class="result-body" id="result-ov">
+            <div class="placeholder">
+              <div class="placeholder-icon">◈</div>
+              <p>Actions and responses appear here.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ALL BOOKS PANEL ── -->
+      <div class="panel" id="panel-all-books">
+        <div class="quick-actions-row">
+          <button class="btn btn-dark" onclick="loadAllBooks()">⟳ Refresh</button>
+        </div>
+        <div class="result-box">
+          <div class="result-header">
+            <span class="result-header-title">Book Catalogue</span>
+          </div>
+          <div class="result-body" id="result-all-books">
+            <div class="placeholder"><div class="placeholder-icon">📚</div><p>Loading books…</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ACTIVE BOOKS PANEL ── -->
+      <div class="panel" id="panel-active">
+        <div class="quick-actions-row">
+          <button class="btn btn-dark" onclick="loadActiveBooks()">⟳ Refresh</button>
+        </div>
+        <div class="result-box">
+          <div class="result-header">
+            <span class="result-header-title">Currently Borrowed</span>
+          </div>
+          <div class="result-body" id="result-active">
+            <div class="placeholder"><div class="placeholder-icon">📖</div><p>Loading active books…</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── HISTORY PANEL ── -->
+      <div class="panel" id="panel-history">
+        <div class="quick-actions-row">
+          <button class="btn btn-dark" onclick="loadTransactions()">⟳ Refresh</button>
+        </div>
+        <div class="result-box">
+          <div class="result-header">
+            <span class="result-header-title">Transaction History</span>
+          </div>
+          <div class="result-body" id="result-history">
+            <div class="placeholder"><div class="placeholder-icon">🕑</div><p>Loading transactions…</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── BORROW PANEL ── -->
+      <div class="panel" id="panel-borrow">
+        <div class="action-card" style="max-width:440px; margin-bottom:24px">
+          <h3>Borrow a Book</h3>
+          <p class="card-desc">Enter a Book ID to check it out. Your user ID is read from the session.</p>
+          <div class="input-row">
+            <input type="number" id="borrow-id" placeholder="Book ID" min="1"/>
+            <button class="btn btn-green" onclick="borrowBook('borrow-id', 'result-borrow')">↓ Borrow</button>
+          </div>
+        </div>
+        <div class="result-box">
+          <div class="result-header">
+            <span class="result-header-title">Response</span>
+            <button class="result-clear" onclick="clearResult('result-borrow')">clear</button>
+          </div>
+          <div class="result-body" id="result-borrow">
+            <div class="placeholder"><div class="placeholder-icon">↓</div><p>Enter a Book ID and click Borrow.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── RETURN PANEL ── -->
+      <div class="panel" id="panel-return">
+        <div class="action-card" style="max-width:440px; margin-bottom:24px">
+          <h3>Return a Book</h3>
+          <p class="card-desc">Enter the Book ID you are returning. Your user ID is read from the session.</p>
+          <div class="input-row">
+            <input type="number" id="return-id" placeholder="Book ID" min="1"/>
+            <button class="btn btn-amber" onclick="returnBook('return-id', 'result-return')">↑ Return</button>
+          </div>
+        </div>
+        <div class="result-box">
+          <div class="result-header">
+            <span class="result-header-title">Response</span>
+            <button class="result-clear" onclick="clearResult('result-return')">clear</button>
+          </div>
+          <div class="result-body" id="result-return">
+            <div class="placeholder"><div class="placeholder-icon">↑</div><p>Enter a Book ID and click Return.</p></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+<script>
+  const API = "http://127.0.0.1:5000";
+  const actionLocks = {};
+
+  /* ── Panel helpers ────────────────────────────────────────────────────── */
+  const panelTitles = {
+    overview:   ["Overview", "Dashboard"],
+    "all-books": ["Book", "Catalogue"],
+    active:     ["Active", "Borrows"],
+    history:    ["Transaction", "History"],
+    borrow:     ["Borrow", "a Book"],
+    return:     ["Return", "a Book"],
+  };
+
+  function switchPanel(btn, panelId) {
+    document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    switchPanelById(panelId);
+  }
+
+  function switchPanelById(panelId) {
+    document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+    document.getElementById("panel-" + panelId).classList.add("active");
+    // sync nav
+    document.querySelectorAll(".nav-btn").forEach(b => {
+      b.classList.toggle("active", b.dataset.panel === panelId);
+    });
+    // update topbar
+    const [main, sub] = panelTitles[panelId] || ["Library", "OS"];
+    document.getElementById("topbar-title").innerHTML = `${main} <em>${sub}</em>`;
+    sessionStorage.setItem("active_panel", panelId);
+
+    // auto-load panel data when opening data views
+    if (panelId === "all-books") loadAllBooks();
+    if (panelId === "active") loadActiveBooks();
+    if (panelId === "history") loadTransactions();
+  }
+
+  /* ── Render helpers ───────────────────────────────────────────────────── */
+  function loading(id) {
+    document.getElementById(id).innerHTML = `<div class="loader"><div class="spin"></div></div>`;
+  }
+
+  function clearResult(id) {
+    document.getElementById(id).innerHTML = `<div class="placeholder"><div class="placeholder-icon">◈</div><p>Cleared.</p></div>`;
+    sessionStorage.removeItem(`result_${id}`);
+  }
+
+  function notice(type, title, msg) {
+    const icons = { ok: "✓", err: "✕", info: "◈" };
+    return `<div class="notice ${type}">
+      <span class="notice-icon">${icons[type]}</span>
+      <div>
+        <div class="notice-title">${title}</div>
+        <div class="notice-text">${msg}</div>
+      </div>
+    </div>`;
+  }
+
+  function fmtDate(d) {
+    return d ? `<span style="color:var(--ink)">${d}</span>` : `<span style="color:var(--rule)">—</span>`;
+  }
+
+  /* ── API: Borrow ──────────────────────────────────────────────────────── */
+  async function borrowBook(inputId, resultId) {
+    if (actionLocks[resultId]) return;
+    const book_id = document.getElementById(inputId).value.trim();
+    if (!book_id) { document.getElementById(resultId).innerHTML = notice("err", "Missing field", "Please enter a Book ID."); return; }
+
+    actionLocks[resultId] = true;
+    loading(resultId);
+    try {
+      const res = await fetch(`${API}/borrow`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ book_id: parseInt(book_id) }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        const html = notice("ok", "Borrowed successfully!",
+          `Borrow date: <strong>${data.borrow_date}</strong> &nbsp;·&nbsp; Due: <strong>${data.due_date}</strong>`);
+        document.getElementById(resultId).innerHTML = html;
+        sessionStorage.setItem(`result_${resultId}`, html);
+      } else {
+        const html = notice("err", "Borrow failed", data.error || "Unknown error.");
+        document.getElementById(resultId).innerHTML = html;
+        sessionStorage.setItem(`result_${resultId}`, html);
+      }
+    } catch {
+      const html = notice("err", "Connection error", `Cannot reach ${API}. Is Flask running?`);
+      document.getElementById(resultId).innerHTML = html;
+      sessionStorage.setItem(`result_${resultId}`, html);
+    } finally {
+      actionLocks[resultId] = false;
+    }
+  }
+
+  /* ── API: Return ──────────────────────────────────────────────────────── */
+  async function returnBook(inputId, resultId) {
+    if (actionLocks[resultId]) return;
+    const book_id = document.getElementById(inputId).value.trim();
+    if (!book_id) { document.getElementById(resultId).innerHTML = notice("err", "Missing field", "Please enter a Book ID."); return; }
+
+    actionLocks[resultId] = true;
+    loading(resultId);
+    try {
+      const res = await fetch(`${API}/return`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ book_id: parseInt(book_id) }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        const html = notice("ok", "Returned successfully!",
+          `Return date: <strong>${data.return_date}</strong>`);
+        document.getElementById(resultId).innerHTML = html;
+        sessionStorage.setItem(`result_${resultId}`, html);
+      } else {
+        const html = notice("err", "Return failed", data.error || "Unknown error.");
+        document.getElementById(resultId).innerHTML = html;
+        sessionStorage.setItem(`result_${resultId}`, html);
+      }
+    } catch {
+      const html = notice("err", "Connection error", `Cannot reach ${API}. Is Flask running?`);
+      document.getElementById(resultId).innerHTML = html;
+      sessionStorage.setItem(`result_${resultId}`, html);
+    } finally {
+      actionLocks[resultId] = false;
+    }
+  }
+
+  /* ── API: All Books ───────────────────────────────────────────────────── */
+  async function loadAllBooks() {
+    loading("result-all-books");
+    try {
+      const res = await fetch(`${API}/books`, { credentials: "include" });
+      const data = await res.json();
+      if (!res.ok) { document.getElementById("result-all-books").innerHTML = notice("err", "Failed", data.error || "Unknown error."); return; }
+
+      const books = Array.isArray(data) ? data : data.books || [];
+      if (!books.length) { document.getElementById("result-all-books").innerHTML = notice("info", "Empty", "No books in the catalogue."); return; }
+
+      const rows = books.map(b => `
+        <tr>
+          <td>#${b.id}</td>
+          <td style="font-family:'Outfit',sans-serif;font-weight:600">${b.title}</td>
+          <td style="font-family:'Outfit',sans-serif">${b.author}</td>
+          <td>${b.available_copies > 0
+            ? `<span class="badge badge-green">${b.available_copies} available</span>`
+            : `<span class="badge badge-red">Unavailable</span>`}</td>
+        </tr>`).join("");
+
+      document.getElementById("result-all-books").innerHTML = `
+        <table>
+          <thead><tr><th>#</th><th>Title</th><th>Author</th><th>Copies</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>`;
+    } catch {
+      document.getElementById("result-all-books").innerHTML = notice("err", "Connection error", `Cannot reach ${API}.`);
+    }
+  }
+
+  /* ── API: My Active Books ─────────────────────────────────────────────── */
+  async function loadActiveBooks() {
+    loading("result-active");
+    try {
+      const res = await fetch(`${API}/my-active-books`, { credentials: "include" });
+      const data = await res.json();
+      if (!res.ok) { document.getElementById("result-active").innerHTML = notice("err", "Failed", data.error || "Unknown error."); return; }
+
+      const books = Array.isArray(data) ? data : data.books || [];
+      if (!books.length) { document.getElementById("result-active").innerHTML = notice("info", "Nothing active", "You have no books currently borrowed."); return; }
+
+      const rows = books.map(b => `
+        <tr>
+          <td>#${b.book_id || b.id}</td>
+          <td style="font-family:'Outfit',sans-serif;font-weight:600">${b.title}</td>
+          <td style="font-family:'Outfit',sans-serif">${b.author || "—"}</td>
+          <td>${fmtDate(b.borrow_date)}</td>
+          <td>${fmtDate(b.due_date)}</td>
+          <td><span class="badge badge-gold">Active</span></td>
+        </tr>`).join("");
+
+      document.getElementById("result-active").innerHTML = `
+        <table>
+          <thead><tr><th>#</th><th>Title</th><th>Author</th><th>Borrowed</th><th>Due</th><th>Status</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>`;
+    } catch {
+      document.getElementById("result-active").innerHTML = notice("err", "Connection error", `Cannot reach ${API}.`);
+    }
+  }
+
+  /* ── API: My Transactions ─────────────────────────────────────────────── */
+  async function loadTransactions() {
+    loading("result-history");
+    try {
+      const res = await fetch(`${API}/my-transactions`, { credentials: "include" });
+      const data = await res.json();
+      if (!res.ok) { document.getElementById("result-history").innerHTML = notice("err", "Failed", data.error || "Unknown error."); return; }
+
+      const txns = Array.isArray(data) ? data : data.transactions || [];
+      if (!txns.length) { document.getElementById("result-history").innerHTML = notice("info", "No history", "You have no transactions yet."); return; }
+
+      const rows = txns.map((t, index) => `
+        <tr>
+          <td>${index + 1}</td>
+          <td style="font-family:'Outfit',sans-serif;font-weight:600">${t.book_title || t.title || "Book #" + t.book_id}</td>
+          <td>${fmtDate(t.borrow_date)}</td>
+          <td>${fmtDate(t.due_date)}</td>
+          <td>${fmtDate(t.return_date)}</td>
+          <td>${t.return_date
+            ? `<span class="badge badge-muted">Returned</span>`
+            : `<span class="badge badge-gold">Active</span>`}</td>
+        </tr>`).join("");
+
+      document.getElementById("result-history").innerHTML = `
+        <table>
+          <thead><tr><th>#</th><th>Book</th><th>Borrowed</th><th>Due</th><th>Returned</th><th>Status</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>`;
+    } catch {
+      document.getElementById("result-history").innerHTML = notice("err", "Connection error", `Cannot reach ${API}.`);
+    }
+  }
+
+  /* ── Logout ───────────────────────────────────────────────────────────── */
+  async function logout() {
+    try {
+      await fetch(`${API}/logout`, { method: "POST", credentials: "include" });
+    } catch {}
+    window.location.href = "login.html";
+  }
+
+  /* ── Init ─────────────────────────────────────────────────────────────── */
+  function init() {
+    // Show today's date
+    const now = new Date();
+    document.getElementById("topbar-date").textContent =
+      now.toLocaleDateString("en-US", { weekday: "short", year: "numeric", month: "short", day: "numeric" });
+
+    // Try to read user info from session (GET /my-transactions pings session)
+    // Show user id if stored
+    const uid = sessionStorage.getItem("user_id");
+    if (uid) {
+      document.getElementById("user-id-display").textContent = "User #" + uid;
+      document.getElementById("user-avatar").textContent = uid;
+    }
+
+    // restore action responses after external reloads (e.g., live-server reload)
+    ["result-ov", "result-borrow", "result-return"].forEach((id) => {
+      const saved = sessionStorage.getItem(`result_${id}`);
+      if (saved) {
+        document.getElementById(id).innerHTML = saved;
+      }
+    });
+
+    // keep user on the previously opened panel after reload
+    const savedPanel = sessionStorage.getItem("active_panel") || "overview";
+    switchPanelById(savedPanel);
+  }
+
+  init();
+</script>
+</body>
+</html>
