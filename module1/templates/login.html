@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Library Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="auth-body">
+    <div class="ambient-bg">
+        <span class="bg-blob bg-blob-one"></span>
+        <span class="bg-blob bg-blob-two"></span>
+        <span class="bg-blob bg-blob-three"></span>
+    </div>
+
+    <main class="auth-shell">
+        <section class="auth-panel auth-copy reveal-up">
+            <p class="eyebrow">Library Operations Access</p>
+            <h1>Library Management Portal</h1>
+            <p class="section-subtitle">Securely access your administrative workspace to manage catalog records, members, and transactions.</p>
+
+            <ul class="feature-bullets">
+                <li>Encrypted Authentication</li>
+                <li>Structured Role Permissions</li>
+                <li>Real-Time Data Control</li>
+            </ul>
+
+            <div class="hero-illustration" aria-hidden="true">
+                <svg viewBox="0 0 540 300">
+                    <defs>
+                        <linearGradient id="loginGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#4F46E5"/>
+                            <stop offset="55%" stop-color="#7C3AED"/>
+                            <stop offset="100%" stop-color="#06B6D4"/>
+                        </linearGradient>
+                    </defs>
+                    <rect x="44" y="42" width="452" height="216" rx="28" fill="rgba(255,255,255,0.55)" stroke="rgba(79,70,229,0.28)"/>
+                    <path d="M88 186V104c0-9 7-16 16-16h82c9 0 16 7 16 16v82c0 9-7 16-16 16h-82c-9 0-16-7-16-16Z" fill="url(#loginGradient)" opacity="0.92"/>
+                    <path d="M126 115v59m22-59v59m22-59v59" stroke="#ffffff" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
+                    <rect x="238" y="90" width="222" height="22" rx="11" fill="rgba(79,70,229,0.16)"/>
+                    <rect x="238" y="126" width="184" height="16" rx="8" fill="rgba(30,41,59,0.14)"/>
+                    <rect x="238" y="153" width="206" height="16" rx="8" fill="rgba(30,41,59,0.1)"/>
+                    <rect x="238" y="180" width="158" height="16" rx="8" fill="rgba(30,41,59,0.08)"/>
+                </svg>
+            </div>
+        </section>
+
+        <section class="auth-panel auth-form-panel reveal-up">
+            <div class="auth-form-head">
+                <h2>Sign In</h2>
+                <p>Use your registered account to continue.</p>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-stack">
+                        {% for category, message in messages %}
+                            <div class="flash-item {{ 'flash-success' if category == 'success' else 'flash-error' }}">
+                                <span>{{ message }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('login') }}" class="form-grid floating-form">
+                <div class="field-wrap">
+                    <input id="login-email" type="email" name="email" autocomplete="email" placeholder=" " required>
+                    <label for="login-email">
+                        <span class="field-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><path d="M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Zm0 2v.2L12 13l8-4.8V8H4Z"/></svg>
+                        </span>
+                        Email Address
+                    </label>
+                </div>
+
+                <div class="field-wrap">
+                    <input id="login-password" type="password" name="password" autocomplete="current-password" placeholder=" " required>
+                    <label for="login-password">
+                        <span class="field-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><path d="M17 9h-1V7a4 4 0 0 0-8 0v2H7a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2Zm-6 7.7V18h2v-1.3a2 2 0 1 0-2 0ZM10 9V7a2 2 0 1 1 4 0v2h-4Z"/></svg>
+                        </span>
+                        Password
+                    </label>
+                    <button type="button" class="toggle-pass" data-target="login-password" aria-label="Show password">Show</button>
+                </div>
+
+                <button type="submit" class="btn-gradient">Sign In Securely</button>
+            </form>
+
+            <p class="auth-footer">Need an account? <a href="{{ url_for('signup') }}">Create one</a></p>
+        </section>
+    </main>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
