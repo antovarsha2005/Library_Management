@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Books | Library Management{% endblock %}
+
+{% block content %}
+<section class="dashboard-hero reveal-up manage-books-hero">
+    <h1>Manage Books</h1>
+    <p>Choose an action to maintain your library catalog efficiently.</p>
+</section>
+
+<section class="manage-books-grid">
+    <a href="{{ url_for('add_book') }}" class="manage-action-card reveal-up">
+        <h2>Add New Book</h2>
+        <p>Create a new catalog entry.</p>
+    </a>
+    <a href="{{ url_for('view_books') }}" class="manage-action-card reveal-up">
+        <h2>View All Books</h2>
+        <p>Browse the complete collection.</p>
+    </a>
+    <a href="{{ url_for('update_book') }}" class="manage-action-card reveal-up">
+        <h2>Update Book</h2>
+        <p>Modify existing book details.</p>
+    </a>
+    <a href="{{ url_for('delete_book') }}" class="manage-action-card reveal-up">
+        <h2>Delete Book</h2>
+        <p>Remove a book record safely.</p>
+    </a>
+    <a href="{{ url_for('search_books') }}" class="manage-action-card reveal-up">
+        <h2>Search Book</h2>
+        <p>Find titles quickly by query.</p>
+    </a>
+</section>
+{% endblock %}

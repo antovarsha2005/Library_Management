@@ -551,6 +551,52 @@ a {
     grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.manage-books-hero {
+    text-align: center;
+}
+
+.manage-books-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.manage-action-card {
+    min-height: 180px;
+    border-radius: 20px;
+    border: 1px solid transparent;
+    padding: 1.2rem;
+    text-decoration: none;
+    color: var(--text-main);
+    background:
+        linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.88)) padding-box,
+        linear-gradient(130deg, rgba(31, 117, 255, 0.7), rgba(11, 199, 248, 0.65), rgba(140, 77, 255, 0.7)) border-box;
+    box-shadow: 0 16px 32px rgba(19, 49, 98, 0.14);
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    text-align: center;
+    gap: 0.5rem;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+}
+
+.manage-action-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 22px 38px rgba(19, 49, 98, 0.22);
+    filter: saturate(1.05);
+}
+
+.manage-action-card h2 {
+    font-size: 1.3rem;
+}
+
+.manage-action-card p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.92rem;
+    line-height: 1.5;
+}
+
 .content-scroll {
     max-height: 530px;
     overflow-y: auto;
@@ -761,6 +807,10 @@ a {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
+    .manage-books-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .stats-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -796,6 +846,10 @@ a {
     }
 
     .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .manage-books-grid {
         grid-template-columns: 1fr;
     }
 }

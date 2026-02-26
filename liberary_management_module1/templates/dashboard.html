@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body class="dashboard-body">
     <div class="dashboard-bg"></div>
@@ -19,7 +19,7 @@
                 <span>Library Management</span>
             </a>
             <nav class="nav-actions">
-                <a href="#book-overview" class="nav-btn">Manage Books</a>
+                <a href="{{ url_for('manage_books') }}" class="nav-btn">Manage Books</a>
                 <a href="{{ url_for('profile') }}" class="nav-btn">Profile</a>
                 <a href="{{ url_for('logout') }}" class="nav-btn nav-btn-accent">Logout</a>
             </nav>
@@ -151,6 +151,6 @@
         </div>
     </main>
 
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
