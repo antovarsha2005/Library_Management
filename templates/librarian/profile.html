@@ -1,0 +1,76 @@
+{% extends "librarian/base.html" %}
+
+{% block title %}Profile | Library Management{% endblock %}
+
+{% block content %}
+<section class="profile-layout">
+    <article class="profile-card reveal-up">
+        <div class="avatar">{{ name[:1].upper() }}</div>
+        <h1>{{ name }}</h1>
+        <p>{{ email }}</p>
+        <span class="role-badge {{ role_badge }}">{{ role }}</span>
+        <a href="#edit-profile-form" class="btn-gradient profile-edit">Edit Profile</a>
+    </article>
+
+    <article class="profile-form-card reveal-up" id="edit-profile-form">
+        <h2>Update Profile</h2>
+        <p>Keep your account details current and secure.</p>
+
+        <form method="POST" action="{{ url_for('book.profile') }}" class="profile-form floating-form">
+            <div class="field-wrap">
+                <input id="profile-name" type="text" name="name" value="{{ name }}" placeholder=" " required>
+                <label for="profile-name">
+                    <span class="field-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-5 0-9 2.5-9 5.5A1.5 1.5 0 0 0 4.5 21h15a1.5 1.5 0 0 0 1.5-1.5C21 16.5 17 14 12 14Z"/></svg>
+                    </span>
+                    Full Name
+                </label>
+            </div>
+
+            <div class="field-wrap">
+                <input id="profile-email" type="email" name="email" value="{{ email }}" placeholder=" " required>
+                <label for="profile-email">
+                    <span class="field-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><path d="M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Zm0 2v.2L12 13l8-4.8V8H4Z"/></svg>
+                    </span>
+                    Email Address
+                </label>
+            </div>
+
+            <div class="password-section">
+                <h3>Change Password</h3>
+                <div class="field-wrap">
+                    <input id="profile-current-password" type="password" name="current_password" autocomplete="current-password" placeholder=" ">
+                    <label for="profile-current-password">
+                        <span class="field-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><path d="M17 9h-1V7a4 4 0 0 0-8 0v2H7a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2Zm-6 7.7V18h2v-1.3a2 2 0 1 0-2 0ZM10 9V7a2 2 0 1 1 4 0v2h-4Z"/></svg>
+                        </span>
+                        Current Password
+                    </label>
+                </div>
+                <div class="field-wrap">
+                    <input id="profile-new-password" type="password" name="new_password" autocomplete="new-password" placeholder=" ">
+                    <label for="profile-new-password">
+                        <span class="field-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><path d="M17 9h-1V7a4 4 0 0 0-8 0v2H7a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2Zm-6 7.7V18h2v-1.3a2 2 0 1 0-2 0ZM10 9V7a2 2 0 1 1 4 0v2h-4Z"/></svg>
+                        </span>
+                        New Password
+                    </label>
+                </div>
+                <div class="field-wrap">
+                    <input id="profile-confirm-password" type="password" name="confirm_password" autocomplete="new-password" placeholder=" ">
+                    <label for="profile-confirm-password">
+                        <span class="field-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5.2 3.4 9.9 8 11 4.6-1.1 8-5.8 8-11V5l-8-3Zm-1.2 12.2-2.1-2.1 1.4-1.4 1.3 1.3 3-3 1.4 1.4-4.4 4.4-0.6-.6Z"/></svg>
+                        </span>
+                        Confirm New Password
+                    </label>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-gradient">Save Changes</button>
+        </form>
+    </article>
+</section>
+{% endblock %}
+

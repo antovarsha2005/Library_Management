@@ -1,0 +1,36 @@
+{% extends "admin/base.html" %}
+{% block title %}Add User | Library Management{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+    <h1>Add User</h1>
+    <p>Create a new user record in the SQLite database.</p>
+</section>
+
+<section class="form-card">
+    <form method="post" class="user-form">
+        <label for="name">Name</label>
+        <input id="name" name="name" type="text" required value="{{ form_data.name if form_data else '' }}" placeholder="Enter full name">
+
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" required value="{{ form_data.email if form_data else '' }}" placeholder="user@email.com">
+
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" required placeholder="Enter password">
+
+        <label for="role">Role</label>
+        <select id="role" name="role" required>
+            <option value="" disabled {% if not form_data or not form_data.role %}selected{% endif %}>Select role</option>
+            <option value="admin" {% if form_data and form_data.role == 'admin' %}selected{% endif %}>Admin</option>
+            <option value="librarian" {% if form_data and form_data.role == 'librarian' %}selected{% endif %}>Librarian</option>
+            <option value="user" {% if form_data and form_data.role == 'user' %}selected{% endif %}>User</option>
+        </select>
+
+        <div class="form-actions">
+            <a class="btn btn-light" href="{{ url_for('user.manage_user') }}">Cancel</a>
+            <button class="btn btn-primary" type="submit">Save User</button>
+        </div>
+    </form>
+</section>
+{% endblock %}
+
