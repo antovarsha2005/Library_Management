@@ -1,6 +1,4 @@
-================================================================================
-                    LIBRARY MANAGEMENT SYSTEM
-================================================================================
+LIBRARY MANAGEMENT SYSTEM
 
 
 PROJECT OVERVIEW
@@ -17,9 +15,7 @@ Built with Flask, backed by SQLite, and packaged with Docker, the project follow
 The architecture and workflow satisfy academic DevOps guidelines, demonstrating version control, containerization, automated builds, and deployment.
 
 
-================================================================================
 TECH STACK
-================================================================================
 
 Backend
 - Python
@@ -42,9 +38,7 @@ VERSION CONTROL
 - Git & GitHub
 
 
-================================================================================
 SYSTEM ARCHITECTURE
-================================================================================
 
 A single unified Flask application serves all clients.
 A shared SQLite database stores data with role-based routing controlling access.
@@ -56,9 +50,7 @@ Shared Tables:
 - transactions
 
 
-================================================================================
 DATABASE STRUCTURE
-================================================================================
 
 users
   id
@@ -83,9 +75,7 @@ transactions
   status
 
 
-================================================================================
 USER ROLES & FUNCTIONALITIES (USER MANUAL)
-================================================================================
 
 Getting Started
 ---------------
@@ -127,9 +117,7 @@ Users choose a book, submit a borrow request which updates transactions and decr
 Upon return, the transaction is updated and copies incremented.
 
 
-================================================================================
 HOW TO RUN LOCALLY
-================================================================================
 
 Windows
 
@@ -152,9 +140,7 @@ python app.py
 Access the app at http://localhost:5000.
 
 
-================================================================================
 HOW TO RUN USING DOCKER (RECOMMENDED)
-================================================================================
 
 Method 1: Using Docker Desktop GUI
 
@@ -189,17 +175,13 @@ docker run -p 80:5000 vishnu10811/library_management:v1
 Visit http://localhost:80.
 
 
-================================================================================
 DOCKER BUILD MANUALLY (OPTIONAL)
-================================================================================
 
 docker build -t library_management .
 docker run -p 5000:5000 library_management
 
 
-================================================================================
 CI/CD PIPELINE
-================================================================================
 
 A GitHub Actions workflow automates:
 
@@ -211,9 +193,7 @@ A GitHub Actions workflow automates:
 Automated builds ensure changes deploy immediately.
 
 
-================================================================================
 PROJECT STRUCTURE
-================================================================================
 
 Library_Management/
 ├── app.py
@@ -232,21 +212,16 @@ Library_Management/
 └── templates/
 
 
-================================================================================
 HOW TO ACCESS SYSTEM AS NEW USER
-================================================================================
 
 - Open browser to http://localhost:5000
 - Register a new account, choosing a role
 - Log in and navigate to the dashboard for role-specific features
 
 
-================================================================================
 TROUBLESHOOTING
-================================================================================
 
 - Port already in use: Stop the service on port 5000 or change binding.
 - Docker not installed: Install Docker Desktop and restart.
 - Python not found: Ensure Python 3.x is in PATH.
 - Database file missing: Re-run or initialize database via script.
-
