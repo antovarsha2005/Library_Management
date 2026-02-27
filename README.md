@@ -195,10 +195,3 @@ Library_Management/
 - **Python not found:** Ensure Python 3.x is in PATH.
 - **Database file missing:** Re‑run or initialize database via script.
 
-## CONTRIBUTORS
-
-This system was developed as a team project demonstrating collaborative coding and version control.
-
-## LICENSE
-
-This project is released under an academic use license. Redistribution or commercial use is not permitted without consent.
