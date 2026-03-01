@@ -224,4 +224,4 @@ TROUBLESHOOTING
 - Port already in use: Stop the service on port 5000 or change binding.
 - Docker not installed: Install Docker Desktop and restart.
 - Python not found: Ensure Python 3.x is in PATH.
-- Database file missing: Re-run or initialize database via script.
+- Database file missing: Re-run or initialize database via script
