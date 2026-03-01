@@ -431,6 +431,29 @@ def update_book(book_id, title, author, total_copies, available_copies):
 def delete_book_by_id(book_id):
     with get_db() as conn:
         cursor = conn.cursor()
+        cursor.execute("SELECT id FROM books WHERE id = ?", (book_id,))
+        book_row = cursor.fetchone()
+        if not book_row:
+            return False
+
+        active_borrows = cursor.execute(
+            """
+            SELECT COUNT(1)
+            FROM transactions
+            WHERE book_id = ?
+              AND (return_date IS NULL OR TRIM(return_date) = '')
+            """,
+            (book_id,),
+        ).fetchone()[0]
+        if active_borrows:
+            raise ValueError(
+                "Cannot delete this book while it is currently borrowed. "
+                "Please return all active borrows first."
+            )
+
+        # Keep delete behavior reliable across schema variants by removing
+        # transaction rows that still reference this book before deleting it.
+        cursor.execute("DELETE FROM transactions WHERE book_id = ?", (book_id,))
         cursor.execute("DELETE FROM books WHERE id = ?", (book_id,))
         conn.commit()
         return cursor.rowcount > 0

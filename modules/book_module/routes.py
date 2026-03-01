@@ -256,6 +256,9 @@ def delete_book(id):
 
         flash("Book deleted successfully.", "success")
         return redirect(url_for("book.view_books"))
+    except ValueError as validation_error:
+        flash(str(validation_error), "error")
+        return redirect(url_for("book.view_books"))
     except sqlite3.Error:
         flash("Could not delete the book right now. Please try again.", "error")
         return redirect(url_for("book.view_books"))

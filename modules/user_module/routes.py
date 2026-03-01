@@ -2,6 +2,7 @@ from functools import wraps
 import sqlite3
 
 from flask import Blueprint, flash, redirect, render_template, request, session, url_for
+from werkzeug.security import generate_password_hash
 
 from database import (
     ROLE_VALUES,
@@ -115,7 +116,7 @@ def add_user():
             with get_connection() as conn:
                 conn.execute(
                     "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)",
-                    (name, email, password, role),
+                    (name, email, generate_password_hash(password), role),
                 )
                 conn.commit()
 
@@ -172,24 +173,40 @@ def update_user(user_id):
         role_input = request.form.get("role", "").strip()
         role = normalize_role(role_input)
 
-        if not name or not email or not password or not role_input:
-            flash("All fields are required.", "danger")
-            return render_template("admin/update_user.html", user=user)
+        if not name or not email or not role_input:
+            flash("Name, email, and role are required.", "danger")
+            return render_template(
+                "admin/update_user.html",
+                user={"id": user_id, "name": name, "email": email, "role": role},
+            )
 
         if role not in ROLE_VALUES:
             flash("Please select a valid role.", "danger")
-            return render_template("admin/update_user.html", user=user)
+            return render_template(
+                "admin/update_user.html",
+                user={"id": user_id, "name": name, "email": email, "role": role_input},
+            )
 
         try:
             with get_connection() as conn:
-                conn.execute(
-                    """
-                    UPDATE users
-                    SET name = ?, email = ?, password = ?, role = ?
-                    WHERE id = ?
-                    """,
-                    (name, email, password, role, user_id),
-                )
+                if password:
+                    conn.execute(
+                        """
+                        UPDATE users
+                        SET name = ?, email = ?, password = ?, role = ?
+                        WHERE id = ?
+                        """,
+                        (name, email, generate_password_hash(password), role, user_id),
+                    )
+                else:
+                    conn.execute(
+                        """
+                        UPDATE users
+                        SET name = ?, email = ?, role = ?
+                        WHERE id = ?
+                        """,
+                        (name, email, role, user_id),
+                    )
                 conn.commit()
 
             flash("User updated successfully.", "success")
@@ -200,7 +217,6 @@ def update_user(user_id):
                 "id": user_id,
                 "name": name,
                 "email": email,
-                "password": password,
                 "role": role,
             }
             return render_template("admin/update_user.html", user=refreshed_user)
