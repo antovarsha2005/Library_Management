@@ -6,22 +6,39 @@ on:
       - main
 
 jobs:
-  # Stage 1: Clone
+
+  # =====================================
+  # Stage 1: Clone Repository
+  # =====================================
   clone:
     name: Stage 1 - Clone Repository
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
 
-  # Stage 2: Build
+      # Upload repo as artifact for next jobs
+      - name: Upload source code
+        uses: actions/upload-artifact@v4
+        with:
+          name: source-code
+          path: .
+
+  # =====================================
+  # Stage 2: Build Application
+  # =====================================
   build:
     name: Stage 2 - Build Application
     runs-on: ubuntu-latest
     needs: clone
+
     steps:
-      - name: Checkout source code
-        uses: actions/checkout@v4
+      # Download code from clone stage
+      - name: Download source code
+        uses: actions/download-artifact@v4
+        with:
+          name: source-code
 
       - name: Set up Python 3.10
         uses: actions/setup-python@v5
@@ -29,7 +46,6 @@ jobs:
           python-version: "3.10"
 
       - name: Install dependencies
-        working-directory: .
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
@@ -37,21 +53,34 @@ jobs:
       - name: Verify build
         run: python -m py_compile app.py
 
-  # Stage 3: Docker Image Creation
-  docker:
+      # Pass verified build forward
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: built-app
+          path: .
+
+  # =====================================
+  # Stage 3: Docker Build & Push
+  # =====================================
+  build-and-dockerize:
     name: Stage 3 - Docker Image Creation
     runs-on: ubuntu-latest
     needs: build
+
     env:
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME || secrets.DOCKERHUB_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD || secrets.DOCKERHUB_TOKEN || secrets.DOCKERHUB_PASSWORD }}
+
     steps:
-      - name: Checkout source code
-        uses: actions/checkout@v4
+      # Download built app
+      - name: Download built application
+        uses: actions/download-artifact@v4
+        with:
+          name: built-app
 
       - name: Resolve Docker image metadata
         id: image
-        shell: bash
         run: |
           if [ -n "${DOCKER_USERNAME}" ] && [ -n "${DOCKER_PASSWORD}" ]; then
             echo "push=true" >> "$GITHUB_OUTPUT"
@@ -77,4 +106,4 @@ jobs:
 
       - name: Docker push skipped
         if: steps.image.outputs.push != 'true'
-        run: echo "DOCKER_USERNAME/DOCKER_PASSWORD secrets not found. Built image locally only."
+        run: echo "Docker credentials not found — image built locally only."
